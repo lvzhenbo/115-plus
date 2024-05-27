@@ -33,7 +33,6 @@ jobs:
 
       - name: Build & Release
         run: |
-          pnpm run build
           pnpm run release --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
