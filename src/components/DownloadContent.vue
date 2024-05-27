@@ -92,6 +92,7 @@
           message.error('暂不支持下载文件夹');
           return;
         }
+
         const download = (await getDownLoadUrl(file)) as DownloadItem;
         downloads.value.push(download);
       }
