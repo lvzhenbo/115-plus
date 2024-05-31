@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install pnpm
+      - name: Set Corepack
         run: |
           corepack enable
 
