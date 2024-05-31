@@ -26,14 +26,12 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack use pnpm
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Build & Release
         run: |
-          git status
           pnpm run release --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
