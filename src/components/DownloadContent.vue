@@ -84,12 +84,15 @@
         }
       });
       if (files.length === 0) {
+        message.destroyAll();
         message.warning('请选择文件');
         return;
       }
+      const loading = message.loading('获取下载链接中...');
       for (const file of files) {
         if (file.isDir) {
-          message.error('暂不支持下载文件夹');
+          loading.destroy();
+          message.error('暂不支持下载文件夹，请勿选择文件夹');
           return;
         }
 
@@ -97,9 +100,11 @@
         downloads.value.push(download);
       }
       if (downloads.value.length === 0) {
+        loading.destroy();
         message.error('获取下载链接失败');
         return;
       } else {
+        loading.destroy();
         showModal.value = true;
       }
     } catch (error) {
