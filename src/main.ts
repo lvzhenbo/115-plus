@@ -32,6 +32,7 @@ createApp(Download).mount(
   })(),
 );
 
+// 默认删除源文件功能
 let delSource = GM_getValue('delSource') ?? true;
 GM_setValue('delSource', delSource);
 
@@ -63,3 +64,20 @@ const observer = new MutationObserver((mutationsList) => {
 });
 
 observer.observe(document.querySelector('body')!, { childList: true });
+
+// 还原离线下载按钮
+const leftTvf = document.querySelector('.left-tvf') as HTMLElement;
+
+function replaceNodeWithDiv(parentNode: HTMLElement, index: number) {
+  const node = parentNode.childNodes[index];
+  if (node.nodeType === 8 && node.nodeValue!.includes('href')) {
+    const div = document.createElement('div');
+    div.innerHTML = node.nodeValue!;
+    parentNode.replaceChild(div, node);
+  }
+}
+
+if (leftTvf) {
+  replaceNodeWithDiv(leftTvf, 9);
+  replaceNodeWithDiv(leftTvf, 11);
+}
