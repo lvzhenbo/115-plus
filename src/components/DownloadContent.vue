@@ -1,5 +1,8 @@
 <template>
-  <NButton text :theme-overrides="buttonThemeOverrides" @click="getSelectFile"> 下载 </NButton>
+  <NButton text :theme-overrides="buttonThemeOverrides" @click="handleDownload"> 下载 </NButton>
+  <NButton text :theme-overrides="buttonThemeOverrides" style="margin-left: 1rem" @click="openFile">
+    批量新标签打开
+  </NButton>
   <NModal v-model:show="showModal">
     <NCard
       style="width: 40%"
@@ -31,6 +34,7 @@
   import { useMessage } from 'naive-ui';
   import md5 from 'crypto-js/md5';
   import bigInt from 'big-integer';
+  import { useMagicKeys } from '@vueuse/core';
 
   type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
 
@@ -38,6 +42,8 @@
     name: string;
     isDir: boolean;
     code: string;
+    cateId?: string;
+    fileMode?: string;
   }
 
   interface DownloadItem {
@@ -47,13 +53,26 @@
 
   const message = useMessage();
   const showModal = ref(false);
-
   const buttonThemeOverrides: ButtonThemeOverrides = {
     textColorTextHover: '#2777F8',
     textColorTextPressed: '#2777F8',
     textColorTextFocus: '#2777F8',
   };
   const downloads = ref<DownloadItem[]>([]);
+  const keys = useMagicKeys();
+  const ctrlAltD = keys['Ctrl+Alt+D'];
+  const ctrlAltO = keys['Ctrl+Alt+O'];
+
+  watch(ctrlAltD, (v) => {
+    if (v) {
+      handleDownload();
+    }
+  });
+  watch(ctrlAltO, (v) => {
+    if (v) {
+      openFile();
+    }
+  });
 
   const gKts = [
     240, 229, 105, 174, 191, 220, 191, 138, 26, 69, 232, 190, 125, 166, 115, 184, 222, 143, 231,
@@ -68,26 +87,34 @@
   const gKeyS = [0x29, 0x23, 0x21, 0x5e];
   const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
 
-  const getSelectFile = async () => {
-    try {
-      const files: FileItem[] = [];
-      downloads.value = [];
-      const lists = document.querySelectorAll('.list-contents > ul > li');
-      lists.forEach((item) => {
-        const checkbox = item.querySelector('input[type="checkbox"]');
-        if (checkbox && (checkbox as HTMLInputElement).checked) {
-          files.push({
-            name: item.getAttribute('title') as string,
-            isDir: item.getAttribute('file_type') === '0' ? true : false,
-            code: item.getAttribute('pick_code') as string,
-          });
-        }
-      });
-      if (files.length === 0) {
-        message.destroyAll();
-        message.warning('请选择文件');
-        return;
+  const getSelectFile = () => {
+    const files: FileItem[] = [];
+    downloads.value = [];
+    const lists = document.querySelectorAll('.list-contents > ul > li');
+    lists.forEach((item) => {
+      const checkbox = item.querySelector('input[type="checkbox"]');
+      if (checkbox && (checkbox as HTMLInputElement).checked) {
+        files.push({
+          name: item.getAttribute('title') as string,
+          isDir: item.getAttribute('file_type') === '0' ? true : false,
+          code: item.getAttribute('pick_code') as string,
+          cateId: (item.getAttribute('cate_id') as string) || '',
+          fileMode: (item.getAttribute('file_mode') as string) || '',
+        });
       }
+    });
+    if (files.length === 0) {
+      message.destroyAll();
+      message.warning('请选择文件');
+      return false;
+    }
+    return files;
+  };
+
+  const handleDownload = async () => {
+    try {
+      const files = getSelectFile();
+      if (!files) return;
       const loading = message.loading('获取下载链接中...');
       for (const file of files) {
         if (file.isDir) {
@@ -111,6 +138,19 @@
       console.error(error);
       message.error(`获取信息失败，错误信息：${error}`);
     }
+  };
+
+  const openFile = () => {
+    const files = getSelectFile();
+    if (!files) return;
+    message.warning('浏览器可能会拦截弹出窗口，请允许弹出窗口权限');
+    files.forEach((file) => {
+      if (file.isDir) {
+        window.open(`https://115.com/?cid=${file.cateId}&offset=0&tab=&mode=wangpan`);
+      } else if (file.fileMode === '9') {
+        window.open(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`);
+      }
+    });
   };
 
   const handleClose = () => {
