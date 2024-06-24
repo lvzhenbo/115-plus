@@ -1,4 +1,4 @@
-import md5 from 'crypto-js/md5';
+import CryptoJS from 'crypto-js';
 import bigInt from 'big-integer';
 
 export interface FileItem {
@@ -20,6 +20,7 @@ const gKts = [
 ];
 const gKeyS = [0x29, 0x23, 0x21, 0x5e];
 const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
+const md5 = CryptoJS.MD5;
 
 export const getDownLoadUrl = (file: FileItem) => {
   const time = Math.floor(new Date().getTime() / 1000);
