@@ -3,6 +3,14 @@
   <NButton text :theme-overrides="buttonThemeOverrides" style="margin-left: 1rem" @click="openFile">
     批量新标签打开
   </NButton>
+  <NButton
+    text
+    :theme-overrides="buttonThemeOverrides"
+    style="margin-left: 1rem"
+    @click="handlePlay"
+  >
+    播放
+  </NButton>
   <NModal v-model:show="showModal">
     <NCard
       style="width: 40%"
@@ -27,41 +35,87 @@
       </NList>
     </NCard>
   </NModal>
+  <NModal v-model:show="showVideo">
+    <NCard
+      style="width: 60%"
+      title="视频播放"
+      :bordered="false"
+      role="dialog"
+      closable
+      @close="handleVideoClose"
+    >
+      <NLayout has-sider :content-style="{ 'max-height': layoutMaxHeight }">
+        <NLayoutSider :native-scrollbar="false" bordered>
+          <NMenu
+            v-model:value="menuValue"
+            :options="menuOptions"
+            :theme-overrides="menuThemeOverrides"
+            @update:value="handleMenuUpdate"
+          />
+        </NLayoutSider>
+        <NLayout :native-scrollbar="false">
+          <video ref="videoRef" class="video-js"></video>
+        </NLayout>
+      </NLayout>
+    </NCard>
+  </NModal>
 </template>
 
-<script setup lang="ts">
-  import type { ButtonProps } from 'naive-ui';
+<script setup lang="tsx">
+  import type { ButtonProps, MenuOption, MenuProps } from 'naive-ui';
   import { useMessage } from 'naive-ui';
-  import md5 from 'crypto-js/md5';
-  import bigInt from 'big-integer';
   import { useMagicKeys } from '@vueuse/core';
+  import videojs from 'video.js';
+  import 'video.js/dist/video-js.css';
+  import zhHans from 'video.js/dist/lang/zh-Hans.json';
+  import { ref } from 'vue';
+  import { getDownLoadUrl, type FileItem } from '@/utils';
+  import type Player from 'video.js/dist/types/player';
+  import 'videojs-contrib-quality-levels';
+  import 'videojs-hls-quality-selector/dist/videojs-hls-quality-selector';
 
   type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
-
-  interface FileItem {
-    name: string;
-    isDir: boolean;
-    code: string;
-    cateId?: string;
-    fileMode?: string;
-  }
+  type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
 
   interface DownloadItem {
     name: string;
     url: string;
   }
 
+  interface VideoItem {
+    name: string;
+    code: string;
+    url: string;
+    time: number;
+  }
+
+  videojs.addLanguage('zh-Hans', zhHans);
+
   const message = useMessage();
   const showModal = ref(false);
+  const showVideo = ref(false);
   const buttonThemeOverrides: ButtonThemeOverrides = {
     textColorTextHover: '#2777F8',
     textColorTextPressed: '#2777F8',
     textColorTextFocus: '#2777F8',
   };
+  const menuThemeOverrides: MenuThemeOverrides = {
+    itemColorActive: '#EEF0FF',
+    itemColorActiveHover: '#EEF0FF',
+    itemTextColorActive: '#2777F8',
+    itemTextColorActiveHover: '#2777F8',
+  };
   const downloads = ref<DownloadItem[]>([]);
   const keys = useMagicKeys();
   const ctrlAltD = keys['Ctrl+Alt+D'];
   const ctrlAltO = keys['Ctrl+Alt+O'];
+  const videoRef = ref<HTMLVideoElement | null>(null);
+  const videoList = ref<VideoItem[]>([]);
+  let player: Player | null = null;
+  const saveTimer = ref<number | null>(null);
+  const layoutMaxHeight = ref('800px');
+  const menuOptions = ref<MenuOption[]>([]);
+  const menuValue = ref('');
 
   watch(ctrlAltD, (v) => {
     if (v) {
@@ -73,19 +127,6 @@
       openFile();
     }
   });
-
-  const gKts = [
-    240, 229, 105, 174, 191, 220, 191, 138, 26, 69, 232, 190, 125, 166, 115, 184, 222, 143, 231,
-    196, 69, 218, 134, 196, 155, 100, 139, 20, 106, 180, 241, 170, 56, 1, 53, 158, 38, 105, 44, 134,
-    0, 107, 79, 165, 54, 52, 98, 166, 42, 150, 104, 24, 242, 74, 253, 189, 107, 151, 143, 77, 143,
-    137, 19, 183, 108, 142, 147, 237, 14, 13, 72, 62, 215, 47, 136, 216, 254, 254, 126, 134, 80,
-    149, 79, 209, 235, 131, 38, 52, 219, 102, 123, 156, 126, 157, 122, 129, 50, 234, 182, 51, 222,
-    58, 169, 89, 52, 102, 59, 170, 186, 129, 96, 72, 185, 213, 129, 156, 248, 108, 132, 119, 255,
-    84, 120, 38, 95, 190, 232, 30, 54, 159, 52, 128, 92, 69, 44, 155, 118, 213, 27, 143, 204, 195,
-    184, 245,
-  ];
-  const gKeyS = [0x29, 0x23, 0x21, 0x5e];
-  const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
 
   const getSelectFile = () => {
     const files: FileItem[] = [];
@@ -157,40 +198,92 @@
     showModal.value = false;
   };
 
-  const getDownLoadUrl = (file: FileItem) => {
-    const time = Math.floor(new Date().getTime() / 1000);
-    const { data, key } = m115Encode(
-      JSON.stringify({
-        pickcode: file.code,
-      }),
-      time,
-    );
-    const download = {
-      name: '',
-      url: '',
-    };
+  const handlePlay = async () => {
+    try {
+      const files = getSelectFile();
+      if (!files) return;
+      videoList.value = [];
+      for (const file of files) {
+        if (file.isDir) {
+          message.error('暂不支持播放文件夹，请勿选择文件夹');
+          return;
+        }
+        if (file.fileMode === '9') {
+          const url = (await getVideoUrl(file.code)) as string;
+          const historyTime = (await getVideoHistory(file.code)) as number;
+          videoList.value.push({
+            name: file.name,
+            code: file.code,
+            // http转https
+            url: url.replace('http://', 'https://'),
+            time: historyTime,
+          });
+        }
+      }
+      if (videoList.value.length === 0) {
+        message.error('未选择视频文件');
+        return;
+      }
+      menuOptions.value = videoList.value.map((item) => {
+        return {
+          label: item.name,
+          key: item.code,
+        };
+      });
+      menuValue.value = videoList.value[0].code;
+      showVideo.value = true;
+      nextTick(() => {
+        if (videoRef.value) {
+          player = videojs(videoRef.value, {
+            controls: true,
+            autoplay: true,
+            fluid: true,
+            language: 'zh-Hans',
+            sources: [
+              {
+                src: videoList.value[0].url,
+                type: 'application/x-mpegURL',
+              },
+            ],
+            playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5],
+          });
+          // @ts-ignore
+          player.hlsQualitySelector({
+            displayCurrentQuality: true,
+          });
+          player.currentTime(videoList.value[0].time);
+          saveTimer.value = setInterval(() => {
+            if (!player!.paused()) {
+              return;
+            }
+            const time = player!.currentTime();
+            if (time && Math.floor(time) !== videoList.value[0].time) {
+              videoList.value[0].time = Math.floor(time);
+              setVideoHistory(files[0].code, Math.floor(time));
+            }
+          }, 5000);
+          player.on('playerresize', () => {
+            layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
+          });
+          player.trigger('playerresize');
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getVideoUrl = (code: string) => {
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
-        method: 'POST',
-        url: `http://proapi.115.com/app/chrome/downurl?t=${time}`,
-        data: `data=${encodeURIComponent(data)}`,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        method: 'GET',
+        url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
         onload: (response) => {
           const json = JSON.parse(response.responseText);
-          if (!json.state) {
-            reject(json.msg);
+          if (json.state) {
+            resolve(json.video_url);
           } else {
-            const data = Object.values(JSON.parse(m115Decode(json.data, key)))[0] as {
-              file_name: string;
-              url: {
-                url: string;
-              };
-            };
-            download.name = data.file_name;
-            download.url = data.url.url;
-            resolve(download);
+            reject(json.msg);
           }
         },
         onerror: (error) => {
@@ -200,199 +293,74 @@
     });
   };
 
-  const m115Encode = (code: string, time: number) => {
-    const key = stringToBytes(md5(`!@###@#${time}DFDR@#@#`).toString());
-    const bytes = stringToBytes(code);
-    const tmp1 = m115SymEncode(bytes, bytes.length, key);
-    const tmp2 = key.slice(0, 16).concat(tmp1);
-    return {
-      data: m115AsymEncode(tmp2, tmp2.length),
-      key,
-    };
+  const getVideoHistory = (code: string) => {
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
+        onload: (response) => {
+          const json = JSON.parse(response.responseText);
+          if (json.state) {
+            resolve(json.data.time);
+          } else {
+            reject(json.msg);
+          }
+        },
+        onerror: (error) => {
+          reject(error);
+        },
+      });
+    });
   };
 
-  const m115Decode = function (src: string, key: number[]) {
-    const bytes = stringToBytes(window.atob(src));
-    const tmp = m115AsymDecode(bytes, bytes.length);
-    return bytesToString(m115SymDecode(tmp.slice(16), tmp.length - 16, key, tmp.slice(0, 16)));
-  };
-
-  const stringToBytes = (str: string) => {
-    const arr = [];
-    const strLength = str.length;
-    for (let i = 0; i < strLength; i++) {
-      arr.push(str.charCodeAt(i));
+  const handleVideoClose = () => {
+    if (saveTimer.value) {
+      clearInterval(saveTimer.value);
     }
-    return arr;
-  };
-
-  const m115SymEncode = (src: number[], srclen: number, key1: number[]) => {
-    let ret;
-    const k1 = m115Getkey(4, key1);
-    const k2 = m115Getkey(12, null);
-    ret = xor115Enc(src, srclen, k1, 4);
-    ret.reverse();
-    ret = xor115Enc(ret, srclen, k2, 12);
-    return ret;
-  };
-
-  const m115SymDecode = (src: number[], srclen: number, key1: number[], key2: number[]) => {
-    const k1 = m115Getkey(4, key1);
-    const k2 = m115Getkey(12, key2);
-    let ret = xor115Enc(src, srclen, k2, 12);
-    ret.reverse();
-    ret = xor115Enc(ret, srclen, k1, 4);
-    return ret;
-  };
-
-  const m115Getkey = (length: number, key: number[] | null) => {
-    if (key != null) {
-      const results = [];
-      for (let i = 0; i < length; i++) {
-        results.push(((key[i] + gKts[length * i]) & 0xff) ^ gKts[length * (length - 1 - i)]);
-      }
-      return results;
+    if (player) {
+      player.dispose();
     }
-    if (length === 12) {
-      return gKeyL.slice(0);
-    }
-    return gKeyS.slice(0);
+    showVideo.value = false;
   };
 
-  const xor115Enc = (src: number[], srclen: number, key: number[], keylen: number) => {
-    const mod4 = srclen % 4;
-    const ret = [];
-    if (mod4 !== 0) {
-      for (let i = 0, j = 0; 0 <= mod4 ? j < mod4 : j > mod4; i = 0 <= mod4 ? ++j : --j) {
-        ret.push(src[i] ^ key[i % keylen]);
-      }
-    }
-    for (
-      let i = mod4, k = mod4;
-      mod4 <= srclen ? k < srclen : k > srclen;
-      i = mod4 <= srclen ? ++k : --k
-    ) {
-      ret.push(src[i] ^ key[(i - mod4) % keylen]);
-    }
-    return ret;
+  const setVideoHistory = (code: string, time: number) => {
+    GM_xmlhttpRequest({
+      method: 'POST',
+      url: 'https://v.anxia.com/webapi/files/history',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
+    });
   };
 
-  const m115AsymEncode = (src: number[], srclen: number) => {
-    const m = 128 - 11;
-    let ret = '';
-    const ref = Math.floor((srclen + m - 1) / m);
-    for (let i = 0, j = 0; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-      ret += RSA().encrypt(bytesToString(src.slice(i * m, Math.min((i + 1) * m, srclen))));
+  const handleMenuUpdate = (value: string) => {
+    if (saveTimer.value) {
+      clearInterval(saveTimer.value);
     }
-    return window.btoa(RSA().hex2a(ret));
-  };
-
-  const m115AsymDecode = function (src: number[], srclen: number) {
-    const m = 128;
-    let ret = '';
-    const ref = Math.floor((srclen + m - 1) / m);
-    for (let i = 0, j = 0; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
-      ret += RSA().decrypt(bytesToString(src.slice(i * m, Math.min((i + 1) * m, srclen))));
-    }
-    return stringToBytes(ret);
-  };
-
-  const bytesToString = (b: number[]) => {
-    let ret = '';
-    for (let j = 0; j < b.length; j++) {
-      ret += String.fromCharCode(b[j]);
-    }
-    return ret;
-  };
-
-  const RSA = () => {
-    const n = bigInt(
-      '8686980c0f5a24c4b9d43020cd2c22703ff3f450756529058b1cf88f09b8602136477198a6e2683149659bd122c33592fdb5ad47944ad1ea4d36c6b172aad6338c3bb6ac6227502d010993ac967d1aef00f0c8e038de2e4d3bc2ec368af2e9f10a6f1eda4f7262f136420c07c331b871bf139f74f3010e3c4fe57df3afb71683',
-      16,
-    );
-    const e = bigInt('10001', 16);
-
-    const pkcs1pad2 = (s: string, n: number) => {
-      if (n < s.length + 11) {
-        return null;
-      }
-      const ba = [];
-      let i = s.length - 1;
-      while (i >= 0 && n > 0) {
-        ba[--n] = s.charCodeAt(i--);
-      }
-      ba[--n] = 0;
-      while (n > 2) {
-        ba[--n] = 0xff;
-      }
-      ba[--n] = 2;
-      ba[--n] = 0;
-      const c = a2hex(ba);
-      return bigInt(c, 16);
-    };
-
-    const pkcs1unpad2 = (a: bigInt.BigInteger) => {
-      let b = a.toString(16);
-      if (b.length % 2 !== 0) {
-        b = '0' + b;
-      }
-      const c = hex2a(b);
-      let i = 1;
-      while (c.charCodeAt(i) !== 0) {
-        i++;
-      }
-      return c.slice(i + 1);
-    };
-
-    const a2hex = (byteArray: number[]) => {
-      let hexString = '';
-      for (let i = 0; i < byteArray.length; i++) {
-        let nextHexByte = byteArray[i].toString(16);
-        if (nextHexByte.length < 2) {
-          nextHexByte = '0' + nextHexByte;
+    if (player) {
+      player.src([
+        {
+          src: videoList.value.find((item) => item.code === value)?.url || '',
+          type: 'application/x-mpegURL',
+        },
+      ]);
+      player.play();
+      player.currentTime(videoList.value.find((item) => item.code === value)?.time || 0);
+      saveTimer.value = setInterval(() => {
+        if (!player!.paused()) {
+          return;
         }
-        hexString += nextHexByte;
-      }
-      return hexString;
-    };
-
-    const hex2a = (hex: string) => {
-      let str = '';
-      for (var i = 0; i < hex.length; i += 2) {
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-      }
-      return str;
-    };
-
-    const encrypt = (text: string) => {
-      const m = pkcs1pad2(text, 0x80);
-      if (m === null) {
-        return null;
-      }
-      let h = m.modPow(e, n).toString(16);
-      while (h.length < 0x80 * 2) {
-        h = '0' + h;
-      }
-      return h;
-    };
-
-    const decrypt = (text: string) => {
-      const ba = [];
-      let i = 0;
-      while (i < text.length) {
-        ba[i] = text.charCodeAt(i);
-        i += 1;
-      }
-      const c = bigInt(a2hex(ba), 16).modPow(e, n);
-      const d = pkcs1unpad2(c);
-      return d;
-    };
-
-    return {
-      encrypt,
-      decrypt,
-      hex2a,
-    };
+        const time = player!.currentTime();
+        if (
+          time &&
+          Math.floor(time) !== videoList.value.find((item) => item.code === value)?.time
+        ) {
+          videoList.value.find((item) => item.code === value)!.time = Math.floor(time);
+          setVideoHistory(value, Math.floor(time));
+        }
+      }, 5000);
+    }
   };
 </script>
 
