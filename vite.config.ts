@@ -35,7 +35,7 @@ export default defineConfig({
       build: {
         externalGlobals: {
           vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
-          videojs: cdn.jsdelivr('video.js', 'dist/video.min.js'),
+          'video.js': cdn.jsdelivr('videojs', 'dist/video.min.js'),
         },
       },
     }),
