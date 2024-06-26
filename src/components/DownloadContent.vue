@@ -35,7 +35,7 @@
       </NList>
     </NCard>
   </NModal>
-  <NModal v-model:show="showVideo">
+  <NModal v-model:show="showVideo" @after-leave="handleVideoClose">
     <NCard
       style="width: 60%"
       title="视频播放"
@@ -265,7 +265,7 @@
           });
           player.currentTime(videoList.value[0].time);
           saveTimer.value = setInterval(() => {
-            if (!player!.paused()) {
+            if (player!.paused()) {
               return;
             }
             const time = player!.currentTime();
