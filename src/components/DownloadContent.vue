@@ -391,7 +391,7 @@
       player.play();
       player.currentTime(videoList.value.find((item) => item.code === value)?.time || 0);
       saveTimer.value = setInterval(() => {
-        if (!player!.paused()) {
+        if (player!.paused()) {
           return;
         }
         const time = player!.currentTime();
