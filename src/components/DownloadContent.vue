@@ -228,7 +228,7 @@
             code: file.code,
             // http转https
             url: url.replace('http://', 'https://'),
-            time: historyTime,
+            time: historyTime || 0,
           });
         }
       }
@@ -362,13 +362,18 @@
   };
 
   const setVideoHistory = (code: string, time: number) => {
-    GM_xmlhttpRequest({
-      method: 'POST',
-      url: 'https://v.anxia.com/webapi/files/history',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
+    getCookie().then((cookie) => {
+      GM_xmlhttpRequest({
+        method: 'POST',
+        url: 'https://v.anxia.com/webapi/files/history',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+            cookie.find((item) => item.name === 'SEID')?.value
+          };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+        },
+        data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
+      });
     });
   };
 
