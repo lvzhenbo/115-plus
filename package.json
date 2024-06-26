@@ -29,7 +29,7 @@
     "@rushstack/eslint-patch": "^1.10.3",
     "@tsconfig/node20": "^20.1.4",
     "@types/crypto-js": "^4.2.2",
-    "@types/node": "^20.14.8",
+    "@types/node": "^20.14.9",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
     "@vue/eslint-config-prettier": "^9.0.0",
@@ -42,7 +42,7 @@
     "release-it": "^17.4.0",
     "typescript": "^5.5.2",
     "unplugin-auto-import": "^0.17.6",
-    "unplugin-vue-components": "^0.27.0",
+    "unplugin-vue-components": "^0.27.1",
     "vite": "^5.3.1",
     "vite-plugin-monkey": "^4.0.3",
     "vue-eslint-parser": "^9.4.3",
@@ -62,5 +62,5 @@
       "after:git:release": "pnpm run build"
     }
   },
-  "packageManager": "pnpm@9.2.0+sha512.98a80fd11c2e7096747762304106432b3ddc67dcf54b5a8c01c93f68a2cd5e05e6821849522a06fb76284d41a2660d5e334f2ee3bbf29183bf2e739b1dafa771"
+  "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a"
 }

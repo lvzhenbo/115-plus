@@ -89,6 +89,18 @@
     time: number;
   }
 
+  type CbCookie = {
+    domain: string;
+    hostOnly: boolean;
+    httpOnly: boolean;
+    name: string;
+    path: string;
+    sameSite: string;
+    secure: boolean;
+    session: boolean;
+    value: string;
+  };
+
   videojs.addLanguage('zh-Hans', zhHans);
 
   const message = useMessage();
@@ -275,41 +287,67 @@
 
   const getVideoUrl = (code: string) => {
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
-        onload: (response) => {
-          const json = JSON.parse(response.responseText);
-          if (json.state) {
-            resolve(json.video_url);
-          } else {
-            reject(json.msg);
-          }
-        },
-        onerror: (error) => {
+      getCookie()
+        .then((cookie) => {
+          GM_xmlhttpRequest({
+            method: 'GET',
+            url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
+            headers: {
+              Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+                cookie.find((item) => item.name === 'SEID')?.value
+              };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+            },
+            onload: (response) => {
+              const json = JSON.parse(response.responseText);
+              if (json.state) {
+                resolve(json.video_url);
+              } else {
+                reject(json.error);
+              }
+            },
+            onerror: (error) => {
+              reject(error);
+            },
+          });
+        })
+        .catch((error) => {
           reject(error);
-        },
-      });
+        });
     });
   };
 
   const getVideoHistory = (code: string) => {
     return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
-        onload: (response) => {
-          const json = JSON.parse(response.responseText);
-          if (json.state) {
-            resolve(json.data.time);
-          } else {
-            reject(json.msg);
-          }
-        },
-        onerror: (error) => {
+      getCookie()
+        .then((cookie) => {
+          GM_xmlhttpRequest({
+            method: 'GET',
+            url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
+            headers: {
+              Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+                cookie.find((item) => item.name === 'SEID')?.value
+              };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+            },
+            onload: (response) => {
+              const json = JSON.parse(response.responseText);
+              if (json.state) {
+                resolve(json.data.time ? json.data.time : 0);
+              } else {
+                if (json.error) {
+                  reject(json.error);
+                } else {
+                  resolve(0);
+                }
+              }
+            },
+            onerror: (error) => {
+              reject(error);
+            },
+          });
+        })
+        .catch((error) => {
           reject(error);
-        },
-      });
+        });
     });
   };
 
@@ -361,6 +399,18 @@
         }
       }, 5000);
     }
+  };
+
+  const getCookie = (): Promise<CbCookie[]> => {
+    return new Promise((resolve, reject) => {
+      GM_cookie.list({ domain: '115.com' }, (cookie, error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(cookie);
+        }
+      });
+    });
   };
 </script>
 
