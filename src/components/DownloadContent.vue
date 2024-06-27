@@ -54,7 +54,7 @@
           />
         </NLayoutSider>
         <NLayout :native-scrollbar="false">
-          <video ref="videoRef" class="video-js"></video>
+          <div ref="videoRef" class="video-js"></div>
         </NLayout>
       </NLayout>
     </NCard>
@@ -65,14 +65,12 @@
   import type { ButtonProps, MenuOption, MenuProps } from 'naive-ui';
   import { useMessage } from 'naive-ui';
   import { useMagicKeys } from '@vueuse/core';
-  import videojs from 'video.js';
-  import 'video.js/dist/video-js.css';
-  import zhHans from 'video.js/dist/lang/zh-Hans.json';
   import { ref } from 'vue';
   import { getDownLoadUrl, type FileItem } from '@/utils';
-  import type Player from 'video.js/dist/types/player';
-  import 'videojs-contrib-quality-levels';
-  import 'videojs-hls-quality-selector/dist/videojs-hls-quality-selector';
+  import Player from 'xgplayer';
+  import 'xgplayer/dist/index.min.css';
+  import HlsJsPlugin from 'xgplayer-hls.js';
+  import { Events } from 'xgplayer';
 
   type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
   type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
@@ -101,8 +99,6 @@
     value: string;
   };
 
-  videojs.addLanguage('zh-Hans', zhHans);
-
   const message = useMessage();
   const showModal = ref(false);
   const showVideo = ref(false);
@@ -123,7 +119,7 @@
   const ctrlAltO = keys['Ctrl+Alt+O'];
   const videoRef = ref<HTMLVideoElement | null>(null);
   const videoList = ref<VideoItem[]>([]);
-  let player: Player | null = null;
+  const player = ref<Player | null>(null);
   const saveTimer = ref<number | null>(null);
   const layoutMaxHeight = ref('800px');
   const menuOptions = ref<MenuOption[]>([]);
@@ -246,38 +242,53 @@
       showVideo.value = true;
       nextTick(() => {
         if (videoRef.value) {
-          player = videojs(videoRef.value, {
-            controls: true,
-            autoplay: true,
-            fluid: true,
-            language: 'zh-Hans',
-            sources: [
-              {
-                src: videoList.value[0].url,
-                type: 'application/x-mpegURL',
+          if (document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+            player.value = new Player({
+              el: videoRef.value,
+              url: videoList.value[0].url,
+              autoplay: true,
+              fluid: true,
+              volume: 1,
+              playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
+              rotate: true,
+              pip: true,
+              dynamicBg: {
+                disable: false,
               },
-            ],
-            playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5],
-          });
-          // @ts-ignore
-          player.hlsQualitySelector({
-            displayCurrentQuality: true,
-          });
-          player.currentTime(videoList.value[0].time);
-          saveTimer.value = setInterval(() => {
-            if (player!.paused()) {
-              return;
-            }
-            const time = player!.currentTime();
-            if (time && Math.floor(time) !== videoList.value[0].time) {
-              videoList.value[0].time = Math.floor(time);
-              setVideoHistory(files[0].code, Math.floor(time));
-            }
-          }, 5000);
-          player.on('playerresize', () => {
-            layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
-          });
-          player.trigger('playerresize');
+            });
+          } else if (HlsJsPlugin.isSupported()) {
+            player.value = new Player({
+              el: videoRef.value,
+              isLive: false,
+              url: videoList.value[0].url,
+              plugins: [HlsJsPlugin],
+              autoplay: true,
+              fluid: true,
+              volume: 1,
+              playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
+              rotate: true,
+              pip: true,
+              dynamicBg: {
+                disable: false,
+              },
+            });
+          }
+          if (player.value) {
+            player.value.currentTime = videoList.value[0].time;
+            saveTimer.value = setInterval(() => {
+              if (player.value!.paused) {
+                return;
+              }
+              const time = player.value!.currentTime;
+              if (time && Math.floor(time) !== videoList.value[0].time) {
+                videoList.value[0].time = Math.floor(time);
+                setVideoHistory(files[0].code, Math.floor(time));
+              }
+            }, 5000);
+            player.value.on(Events.VIDEO_RESIZE, () => {
+              layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
+            });
+          }
         }
       });
     } catch (error) {
@@ -354,9 +365,11 @@
   const handleVideoClose = () => {
     if (saveTimer.value) {
       clearInterval(saveTimer.value);
+      saveTimer.value = null;
     }
-    if (player) {
-      player.dispose();
+    if (player.value) {
+      player.value.destroy();
+      player.value = null;
     }
     showVideo.value = false;
   };
@@ -380,21 +393,17 @@
   const handleMenuUpdate = (value: string) => {
     if (saveTimer.value) {
       clearInterval(saveTimer.value);
+      saveTimer.value = null;
     }
-    if (player) {
-      player.src([
-        {
-          src: videoList.value.find((item) => item.code === value)?.url || '',
-          type: 'application/x-mpegURL',
-        },
-      ]);
-      player.play();
-      player.currentTime(videoList.value.find((item) => item.code === value)?.time || 0);
+    if (player.value) {
+      player.value.switchURL(videoList.value.find((item) => item.code === value)?.url || '');
+      player.value.play();
+      player.value.currentTime = videoList.value.find((item) => item.code === value)?.time || 0;
       saveTimer.value = setInterval(() => {
-        if (player!.paused()) {
+        if (player.value!.paused) {
           return;
         }
-        const time = player!.currentTime();
+        const time = player.value!.currentTime;
         if (
           time &&
           Math.floor(time) !== videoList.value.find((item) => item.code === value)?.time

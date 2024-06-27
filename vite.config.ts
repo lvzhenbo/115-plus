@@ -35,7 +35,8 @@ export default defineConfig({
       build: {
         externalGlobals: {
           vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
-          'video.js': cdn.jsdelivr('videojs', 'dist/video.min.js'),
+          xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
+          'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
           'big-integer': cdn.staticfile('bigInt', 'BigInteger.min.js'),
           'crypto-js': cdn.staticfile('CryptoJS', 'crypto-js.min.js'),
         },
