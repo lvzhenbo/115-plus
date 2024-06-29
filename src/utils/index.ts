@@ -259,3 +259,30 @@ const RSA = () => {
     hex2a,
   };
 };
+
+export interface Settings {
+  sidebar: {
+    enable: boolean;
+  };
+  deleteSource: {
+    enable: boolean;
+  };
+  download: {
+    enable: boolean;
+  };
+  openNewTab: {
+    enable: boolean;
+  };
+  oldButton: {
+    enable: boolean;
+  };
+  video: {
+    enable: boolean;
+    volume: number;
+    defaultPlaybackRate: number;
+    autoplay: boolean;
+    history: boolean;
+  };
+}
+
+export const settings: Settings | null = GM_getValue('settings', null);

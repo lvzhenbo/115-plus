@@ -34,7 +34,10 @@ export default defineConfig({
       },
       build: {
         externalGlobals: {
-          vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
+          vue: cdn
+            .jsdelivr('Vue', 'dist/vue.global.prod.js')
+            .concat(util.dataUrl(';window.Vue=Vue;')),
+          'naive-ui': cdn.staticfile('naive', 'index.prod.js'),
           xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
           'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
           'big-integer': cdn.staticfile('bigInt', 'BigInteger.min.js'),

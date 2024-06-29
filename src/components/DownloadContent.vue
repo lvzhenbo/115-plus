@@ -1,9 +1,23 @@
 <template>
-  <NButton text :theme-overrides="buttonThemeOverrides" @click="handleDownload"> 下载 </NButton>
-  <NButton text :theme-overrides="buttonThemeOverrides" style="margin-left: 1rem" @click="openFile">
+  <NButton
+    v-if="settings ? settings.download.enable : true"
+    text
+    :theme-overrides="buttonThemeOverrides"
+    @click="handleDownload"
+  >
+    下载
+  </NButton>
+  <NButton
+    v-if="settings ? settings.openNewTab.enable : true"
+    text
+    :theme-overrides="buttonThemeOverrides"
+    style="margin-left: 1rem"
+    @click="openFile"
+  >
     批量新标签打开
   </NButton>
   <NButton
+    v-if="settings ? settings.video.enable : true"
     text
     :theme-overrides="buttonThemeOverrides"
     style="margin-left: 1rem"
@@ -71,6 +85,7 @@
   import 'xgplayer/dist/index.min.css';
   import HlsJsPlugin from 'xgplayer-hls.js';
   import { Events } from 'xgplayer';
+  import { settings } from '@/utils';
 
   type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
   type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
@@ -246,9 +261,10 @@
             player.value = new Player({
               el: videoRef.value,
               url: videoList.value[0].url,
-              autoplay: true,
+              autoplay: settings ? settings.video.autoplay : true,
               fluid: true,
-              volume: 1,
+              volume: settings ? settings.video.volume : 1,
+              defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
               playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
               rotate: true,
               pip: true,
@@ -262,9 +278,10 @@
               isLive: false,
               url: videoList.value[0].url,
               plugins: [HlsJsPlugin],
-              autoplay: true,
+              autoplay: settings ? settings.video.autoplay : true,
               fluid: true,
-              volume: 1,
+              volume: settings ? settings.video.volume : 1,
+              defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
               playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
               rotate: true,
               pip: true,
@@ -274,17 +291,19 @@
             });
           }
           if (player.value) {
-            player.value.currentTime = videoList.value[0].time;
-            saveTimer.value = setInterval(() => {
-              if (player.value!.paused) {
-                return;
-              }
-              const time = player.value!.currentTime;
-              if (time && Math.floor(time) !== videoList.value[0].time) {
-                videoList.value[0].time = Math.floor(time);
-                setVideoHistory(files[0].code, Math.floor(time));
-              }
-            }, 5000);
+            if (!settings || settings.video.history) {
+              player.value.currentTime = videoList.value[0].time;
+              saveTimer.value = setInterval(() => {
+                if (player.value!.paused) {
+                  return;
+                }
+                const time = player.value!.currentTime;
+                if (time && Math.floor(time) !== videoList.value[0].time) {
+                  videoList.value[0].time = Math.floor(time);
+                  setVideoHistory(files[0].code, Math.floor(time));
+                }
+              }, 5000);
+            }
             player.value.on(Events.VIDEO_RESIZE, () => {
               layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
             });
@@ -293,6 +312,7 @@
       });
     } catch (error) {
       console.error(error);
+      message.error(`视频播放失败，错误信息：${error}`);
     }
   };
 
@@ -311,7 +331,11 @@
             onload: (response) => {
               const json = JSON.parse(response.responseText);
               if (json.state) {
-                resolve(json.video_url);
+                if (json.video_url) {
+                  resolve(json.video_url);
+                } else {
+                  reject('视频地址获取失败');
+                }
               } else {
                 reject(json.error);
               }
@@ -397,21 +421,25 @@
     }
     if (player.value) {
       player.value.switchURL(videoList.value.find((item) => item.code === value)?.url || '');
-      player.value.play();
-      player.value.currentTime = videoList.value.find((item) => item.code === value)?.time || 0;
-      saveTimer.value = setInterval(() => {
-        if (player.value!.paused) {
-          return;
-        }
-        const time = player.value!.currentTime;
-        if (
-          time &&
-          Math.floor(time) !== videoList.value.find((item) => item.code === value)?.time
-        ) {
-          videoList.value.find((item) => item.code === value)!.time = Math.floor(time);
-          setVideoHistory(value, Math.floor(time));
-        }
-      }, 5000);
+      if (!settings || settings.video.autoplay) {
+        player.value.play();
+      }
+      if (!settings || settings.video.history) {
+        player.value.currentTime = videoList.value.find((item) => item.code === value)?.time || 0;
+        saveTimer.value = setInterval(() => {
+          if (player.value!.paused) {
+            return;
+          }
+          const time = player.value!.currentTime;
+          if (
+            time &&
+            Math.floor(time) !== videoList.value.find((item) => item.code === value)?.time
+          ) {
+            videoList.value.find((item) => item.code === value)!.time = Math.floor(time);
+            setVideoHistory(value, Math.floor(time));
+          }
+        }, 5000);
+      }
     }
   };
 

@@ -10,6 +10,9 @@ declare module 'vue' {
     DownloadContent: typeof import('./src/components/DownloadContent.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
+    NForm: typeof import('naive-ui')['NForm']
+    NFormItem: typeof import('naive-ui')['NFormItem']
+    NIcon: typeof import('naive-ui')['NIcon']
     NLayout: typeof import('naive-ui')['NLayout']
     NLayoutSider: typeof import('naive-ui')['NLayoutSider']
     NList: typeof import('naive-ui')['NList']
@@ -18,5 +21,13 @@ declare module 'vue' {
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NModal: typeof import('naive-ui')['NModal']
     NModalProvider: typeof import('naive-ui')['NModalProvider']
+    NPopover: typeof import('naive-ui')['NPopover']
+    NRadio: typeof import('naive-ui')['NRadio']
+    NRadioGroup: typeof import('naive-ui')['NRadioGroup']
+    NSlider: typeof import('naive-ui')['NSlider']
+    NSpace: typeof import('naive-ui')['NSpace']
+    NSwitch: typeof import('naive-ui')['NSwitch']
+    NTabPane: typeof import('naive-ui')['NTabPane']
+    NTabs: typeof import('naive-ui')['NTabs']
   }
 }
