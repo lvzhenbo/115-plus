@@ -37,11 +37,11 @@ export default defineConfig({
           vue: cdn
             .jsdelivr('Vue', 'dist/vue.global.prod.js')
             .concat(util.dataUrl(';window.Vue=Vue;')),
-          'naive-ui': cdn.staticfile('naive', 'index.prod.js'),
+          'naive-ui': cdn.jsdelivr('naive', 'dist/index.prod.js'),
           xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
           'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
-          'big-integer': cdn.staticfile('bigInt', 'BigInteger.min.js'),
-          'crypto-js': cdn.staticfile('CryptoJS', 'crypto-js.min.js'),
+          'big-integer': cdn.jsdelivr('bigInt', 'BigInteger.min.js'),
+          'crypto-js': cdn.jsdelivr('CryptoJS', 'crypto-js.min.js'),
         },
       },
     }),
