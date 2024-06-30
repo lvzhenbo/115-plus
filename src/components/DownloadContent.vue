@@ -98,8 +98,8 @@
   interface VideoItem {
     name: string;
     code: string;
-    url: string;
-    time: number;
+    url?: string;
+    time?: number;
   }
 
   type CbCookie = {
@@ -232,14 +232,9 @@
           return;
         }
         if (file.fileMode === '9') {
-          const url = (await getVideoUrl(file.code)) as string;
-          const historyTime = (await getVideoHistory(file.code)) as number;
           videoList.value.push({
             name: file.name,
             code: file.code,
-            // http转https
-            url: url.replace('http://', 'https://'),
-            time: historyTime || 0,
           });
         }
       }
@@ -254,6 +249,8 @@
         };
       });
       menuValue.value = videoList.value[0].code;
+      videoList.value[0].url = (await getVideoUrl(videoList.value[0].code)) as string;
+      videoList.value[0].time = ((await getVideoHistory(videoList.value[0].code)) as number) || 0;
       showVideo.value = true;
       nextTick(() => {
         if (videoRef.value) {
@@ -292,7 +289,7 @@
           }
           if (player.value) {
             if (!settings || settings.video.history) {
-              player.value.currentTime = videoList.value[0].time;
+              player.value.currentTime = videoList.value[0].time!;
               saveTimer.value = setInterval(() => {
                 if (player.value!.paused) {
                   return;
@@ -332,7 +329,7 @@
               const json = JSON.parse(response.responseText);
               if (json.state) {
                 if (json.video_url) {
-                  resolve(json.video_url);
+                  resolve(json.video_url.replace('http://', 'https://'));
                 } else {
                   reject('视频地址获取失败');
                 }
@@ -414,32 +411,39 @@
     });
   };
 
-  const handleMenuUpdate = (value: string) => {
-    if (saveTimer.value) {
-      clearInterval(saveTimer.value);
-      saveTimer.value = null;
-    }
-    if (player.value) {
-      player.value.switchURL(videoList.value.find((item) => item.code === value)?.url || '');
-      if (!settings || settings.video.autoplay) {
-        player.value.play();
+  const handleMenuUpdate = async (value: string) => {
+    try {
+      if (player.value) {
+        const videoIndex = videoList.value.findIndex((item) => item.code === value);
+        if (!videoList.value[videoIndex].url) {
+          videoList.value[videoIndex].url = (await getVideoUrl(value)) as string;
+          videoList.value[videoIndex].time = ((await getVideoHistory(value)) as number) || 0;
+        }
+        if (saveTimer.value) {
+          clearInterval(saveTimer.value);
+          saveTimer.value = null;
+        }
+        player.value.switchURL(videoList.value[videoIndex].url!);
+        if (!settings || settings.video.autoplay) {
+          player.value.play();
+        }
+        if (!settings || settings.video.history) {
+          player.value.currentTime = videoList.value[videoIndex].time!;
+          saveTimer.value = setInterval(() => {
+            if (player.value!.paused) {
+              return;
+            }
+            const time = player.value!.currentTime;
+            if (time && Math.floor(time) !== videoList.value[videoIndex].time) {
+              videoList.value[videoIndex].time = Math.floor(time);
+              setVideoHistory(value, Math.floor(time));
+            }
+          }, 5000);
+        }
       }
-      if (!settings || settings.video.history) {
-        player.value.currentTime = videoList.value.find((item) => item.code === value)?.time || 0;
-        saveTimer.value = setInterval(() => {
-          if (player.value!.paused) {
-            return;
-          }
-          const time = player.value!.currentTime;
-          if (
-            time &&
-            Math.floor(time) !== videoList.value.find((item) => item.code === value)?.time
-          ) {
-            videoList.value.find((item) => item.code === value)!.time = Math.floor(time);
-            setVideoHistory(value, Math.floor(time));
-          }
-        }, 5000);
-      }
+    } catch (error) {
+      console.error(error);
+      message.error(`视频播放失败，错误信息：${error}`);
     }
   };
 
