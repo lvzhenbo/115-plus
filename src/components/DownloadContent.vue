@@ -423,7 +423,7 @@
           clearInterval(saveTimer.value);
           saveTimer.value = null;
         }
-        player.value.switchURL(videoList.value[videoIndex].url!);
+        player.value.src = videoList.value[videoIndex].url!;
         if (!settings || settings.video.autoplay) {
           player.value.play();
         }
