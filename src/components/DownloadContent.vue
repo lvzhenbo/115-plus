@@ -25,7 +25,7 @@
   >
     播放
   </NButton>
-  <NModal v-model:show="showModal">
+  <NModal v-model:show="showDownload">
     <NCard
       style="width: 40%"
       title="文件下载"
@@ -85,7 +85,7 @@
   import 'xgplayer/dist/index.min.css';
   import HlsJsPlugin from 'xgplayer-hls.js';
   import { Events } from 'xgplayer';
-  import { settings } from '@/utils';
+  import { settings, request } from '@/utils';
 
   type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
   type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
@@ -115,7 +115,7 @@
   };
 
   const message = useMessage();
-  const showModal = ref(false);
+  const showDownload = ref(false);
   const showVideo = ref(false);
   const buttonThemeOverrides: ButtonThemeOverrides = {
     textColorTextHover: '#2777F8',
@@ -187,7 +187,7 @@
           return;
         }
 
-        const download = (await getDownLoadUrl(file)) as DownloadItem;
+        const download = await getDownLoadUrl(file);
         downloads.value.push(download);
       }
       if (downloads.value.length === 0) {
@@ -196,7 +196,7 @@
         return;
       } else {
         loading.destroy();
-        showModal.value = true;
+        showDownload.value = true;
       }
     } catch (error) {
       console.error(error);
@@ -218,7 +218,7 @@
   };
 
   const handleClose = () => {
-    showModal.value = false;
+    showDownload.value = false;
   };
 
   const handlePlay = async () => {
@@ -249,8 +249,8 @@
         };
       });
       menuValue.value = videoList.value[0].code;
-      videoList.value[0].url = (await getVideoUrl(videoList.value[0].code)) as string;
-      videoList.value[0].time = ((await getVideoHistory(videoList.value[0].code)) as number) || 0;
+      videoList.value[0].url = await getVideoUrl(videoList.value[0].code);
+      videoList.value[0].time = (await getVideoHistory(videoList.value[0].code)) || 0;
       showVideo.value = true;
       nextTick(() => {
         if (videoRef.value) {
@@ -313,74 +313,50 @@
     }
   };
 
-  const getVideoUrl = (code: string) => {
-    return new Promise((resolve, reject) => {
-      getCookie()
-        .then((cookie) => {
-          GM_xmlhttpRequest({
-            method: 'GET',
-            url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
-            headers: {
-              Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-                cookie.find((item) => item.name === 'SEID')?.value
-              };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
-            },
-            onload: (response) => {
-              const json = JSON.parse(response.responseText);
-              if (json.state) {
-                if (json.video_url) {
-                  resolve(json.video_url.replace('http://', 'https://'));
-                } else {
-                  reject('视频地址获取失败');
-                }
-              } else {
-                reject(json.error);
-              }
-            },
-            onerror: (error) => {
-              reject(error);
-            },
-          });
-        })
-        .catch((error) => {
-          reject(error);
-        });
+  const getVideoUrl = async (code: string) => {
+    const cookie = await getCookie();
+    const res = await request({
+      method: 'GET',
+      url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
+      headers: {
+        Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+          cookie.find((item) => item.name === 'SEID')?.value
+        };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      },
     });
+    const json = JSON.parse(res.responseText);
+    if (json.state) {
+      if (json.video_url) {
+        return json.video_url.replace('http://', 'https://');
+      } else {
+        throw new Error('视频地址获取失败');
+      }
+    } else {
+      throw new Error(json.error);
+    }
   };
 
-  const getVideoHistory = (code: string) => {
-    return new Promise((resolve, reject) => {
-      getCookie()
-        .then((cookie) => {
-          GM_xmlhttpRequest({
-            method: 'GET',
-            url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
-            headers: {
-              Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-                cookie.find((item) => item.name === 'SEID')?.value
-              };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
-            },
-            onload: (response) => {
-              const json = JSON.parse(response.responseText);
-              if (json.state) {
-                resolve(json.data.time ? json.data.time : 0);
-              } else {
-                if (json.error) {
-                  reject(json.error);
-                } else {
-                  resolve(0);
-                }
-              }
-            },
-            onerror: (error) => {
-              reject(error);
-            },
-          });
-        })
-        .catch((error) => {
-          reject(error);
-        });
+  const getVideoHistory = async (code: string) => {
+    const cookie = await getCookie();
+    const res = await request({
+      method: 'GET',
+      url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
+      headers: {
+        Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+          cookie.find((item) => item.name === 'SEID')?.value
+        };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      },
     });
+    const json = JSON.parse(res.responseText);
+    if (json.state) {
+      return json.data.time ? json.data.time : 0;
+    } else {
+      if (json.error) {
+        throw new Error(json.error);
+      } else {
+        return 0;
+      }
+    }
   };
 
   const handleVideoClose = () => {
@@ -395,19 +371,18 @@
     showVideo.value = false;
   };
 
-  const setVideoHistory = (code: string, time: number) => {
-    getCookie().then((cookie) => {
-      GM_xmlhttpRequest({
-        method: 'POST',
-        url: 'https://v.anxia.com/webapi/files/history',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-            cookie.find((item) => item.name === 'SEID')?.value
-          };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
-        },
-        data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
-      });
+  const setVideoHistory = async (code: string, time: number) => {
+    const cookie = await getCookie();
+    request({
+      method: 'POST',
+      url: 'https://v.anxia.com/webapi/files/history',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+          cookie.find((item) => item.name === 'SEID')?.value
+        };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      },
+      data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
     });
   };
 
@@ -416,8 +391,8 @@
       if (player.value) {
         const videoIndex = videoList.value.findIndex((item) => item.code === value);
         if (!videoList.value[videoIndex].url) {
-          videoList.value[videoIndex].url = (await getVideoUrl(value)) as string;
-          videoList.value[videoIndex].time = ((await getVideoHistory(value)) as number) || 0;
+          videoList.value[videoIndex].url = await getVideoUrl(value);
+          videoList.value[videoIndex].time = (await getVideoHistory(value)) || 0;
         }
         if (saveTimer.value) {
           clearInterval(saveTimer.value);

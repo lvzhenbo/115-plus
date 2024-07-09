@@ -22,7 +22,7 @@ const gKeyS = [0x29, 0x23, 0x21, 0x5e];
 const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
 const md5 = CryptoJS.MD5;
 
-export const getDownLoadUrl = (file: FileItem) => {
+export const getDownLoadUrl = async (file: FileItem) => {
   const time = Math.floor(new Date().getTime() / 1000);
   const { data, key } = m115Encode(
     JSON.stringify({
@@ -34,35 +34,28 @@ export const getDownLoadUrl = (file: FileItem) => {
     name: '',
     url: '',
   };
-  return new Promise((resolve, reject) => {
-    GM_xmlhttpRequest({
-      method: 'POST',
-      url: `http://proapi.115.com/app/chrome/downurl?t=${time}`,
-      data: `data=${encodeURIComponent(data)}`,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      onload: (response) => {
-        const json = JSON.parse(response.responseText);
-        if (!json.state) {
-          reject(json.msg);
-        } else {
-          const data = Object.values(JSON.parse(m115Decode(json.data, key)))[0] as {
-            file_name: string;
-            url: {
-              url: string;
-            };
-          };
-          download.name = data.file_name;
-          download.url = data.url.url;
-          resolve(download);
-        }
-      },
-      onerror: (error) => {
-        reject(error);
-      },
-    });
+  const res = await request({
+    method: 'POST',
+    url: `http://proapi.115.com/app/chrome/downurl?t=${time}`,
+    data: `data=${encodeURIComponent(data)}`,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
   });
+  const json = JSON.parse(res.responseText);
+  if (!json.state) {
+    throw new Error(json.msg);
+  } else {
+    const data = Object.values(JSON.parse(m115Decode(json.data, key)))[0] as {
+      file_name: string;
+      url: {
+        url: string;
+      };
+    };
+    download.name = data.file_name;
+    download.url = data.url.url;
+    return download;
+  }
 };
 
 const m115Encode = (code: string, time: number) => {
@@ -286,3 +279,32 @@ export interface Settings {
 }
 
 export const settings: Settings | null = GM_getValue('settings', null);
+
+interface Req {
+  url: string;
+  method: 'GET' | 'POST';
+  data?: string;
+  headers?: Record<string, string>;
+}
+
+interface ResponseType {
+  status: number;
+  responseText: string;
+}
+
+export const request = (req: Req): Promise<ResponseType> => {
+  return new Promise((resolve, reject) => {
+    GM_xmlhttpRequest({
+      method: req.method,
+      url: req.url,
+      data: req.data,
+      headers: req.headers,
+      onload: (response) => {
+        resolve(response);
+      },
+      onerror: (error) => {
+        reject(error);
+      },
+    });
+  });
+};

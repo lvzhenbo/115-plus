@@ -22,7 +22,7 @@
       </div>
       <div> 115+ 设置 </div>
     </NButton>
-    <NModal v-model:show="showModal">
+    <NModal v-model:show="showSetting">
       <NCard
         style="width: 40%"
         title="115+ 设置"
@@ -137,7 +137,7 @@
     textColorTextFocus: '#2777F8',
   };
 
-  const showModal = ref(false);
+  const showSetting = ref(false);
 
   const settingsRef = ref<Settings>(
     settings ?? {
@@ -167,16 +167,16 @@
   );
 
   const handleOpen = () => {
-    showModal.value = true;
+    showSetting.value = true;
   };
 
   const handleClose = () => {
-    showModal.value = false;
+    showSetting.value = false;
   };
 
   const handleSave = () => {
     GM_setValue('settings', settingsRef.value);
-    showModal.value = false;
+    handleClose();
     history.go(0);
   };
 </script>
