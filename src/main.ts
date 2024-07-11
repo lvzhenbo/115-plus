@@ -6,7 +6,7 @@ import { settings } from './utils';
 
 createApp(Setting).mount(
   (() => {
-    const navigation_ceiling = document.querySelector('.navigation-ceiling');
+    const navigation_ceiling = document.querySelector('.top-side');
     const setting = document.createElement('div');
     if (navigation_ceiling) {
       navigation_ceiling.appendChild(setting);
