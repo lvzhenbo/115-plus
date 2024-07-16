@@ -276,6 +276,12 @@ export interface Settings {
     autoplay: boolean;
     history: boolean;
   };
+  darkMode: {
+    enable: boolean;
+  };
+  fp: {
+    enable: boolean;
+  };
 }
 
 export const settings: Settings | null = GM_getValue('settings', null);

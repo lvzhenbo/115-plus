@@ -3,13 +3,47 @@ import Sidebar from './Sidebar.vue';
 import Download from './Download.vue';
 import Setting from './Setting.vue';
 import { settings } from './utils';
+import { createDiscreteApi } from 'naive-ui';
+
+const { message } = createDiscreteApi(['message']);
+
+// 兼容旧版本
+if (settings) {
+  let newSettings = settings;
+  let flag = false;
+  if (!settings.darkMode) {
+    newSettings = {
+      ...newSettings,
+      darkMode: {
+        enable: false,
+      },
+    };
+    flag = true;
+  }
+  if (!settings.fp) {
+    newSettings = {
+      ...newSettings,
+      fp: {
+        enable: true,
+      },
+    };
+    flag = true;
+  }
+  GM_setValue('settings', newSettings);
+  if (flag) {
+    message.loading('115+ 功能更新中，即将刷新页面……');
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+  }
+}
 
 createApp(Setting).mount(
   (() => {
-    const navigation_ceiling = document.querySelector('.top-side');
+    const top_side = document.querySelector('.top-side');
     const setting = document.createElement('div');
-    if (navigation_ceiling) {
-      navigation_ceiling.appendChild(setting);
+    if (top_side) {
+      top_side.appendChild(setting);
     }
     return setting;
   })(),
@@ -90,4 +124,10 @@ if (!settings || settings.oldButton.enable) {
     replaceNodeWithDiv(leftTvf, 9);
     replaceNodeWithDiv(leftTvf, 11);
   }
+}
+
+const fp = document.querySelector('div[class|="fp"]') as HTMLElement;
+
+if (fp) {
+  fp.style.display = 'none';
 }

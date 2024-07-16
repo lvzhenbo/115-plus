@@ -1,20 +1,19 @@
 <template>
-  <div class="main">
-    <NMenu v-model:value="menuValue" :options="menuOptions" :theme-overrides="menuThemeOverrides" />
+  <div style="border-right: 1px solid #edeeef; height: 100%">
+    <NConfigProvider :theme>
+      <NMenu
+        v-model:value="menuValue"
+        :options="menuOptions"
+        :theme-overrides="menuThemeOverrides"
+      />
+    </NConfigProvider>
   </div>
 </template>
 
 <script setup lang="tsx">
-  import type { MenuOption, MenuProps } from 'naive-ui';
-
-  type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
-
-  const menuThemeOverrides: MenuThemeOverrides = {
-    itemColorActive: '#EEF0FF',
-    itemColorActiveHover: '#EEF0FF',
-    itemTextColorActive: '#2777F8',
-    itemTextColorActiveHover: '#2777F8',
-  };
+  import type { MenuOption } from 'naive-ui';
+  import { useTheme } from '@/composables/useTheme';
+  import { menuThemeOverrides } from '@/utils/theme';
 
   const menuOptions: MenuOption[] = [
     {
@@ -31,6 +30,7 @@
     },
   ];
   const menuValue = ref('all');
+  const theme = useTheme();
 
   const url = new URL(window.location.href);
 
@@ -46,9 +46,4 @@
   }
 </script>
 
-<style scoped>
-  .main {
-    border-right: 1px solid #edeeef;
-    height: 100%;
-  }
-</style>
+<style scoped></style>

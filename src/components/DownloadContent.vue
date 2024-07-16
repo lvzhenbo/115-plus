@@ -25,6 +25,15 @@
   >
     播放
   </NButton>
+  <NButton
+    v-if="settings ? settings.video.enable : true"
+    text
+    :theme-overrides="buttonThemeOverrides"
+    style="margin-left: 1rem"
+    @click="handleFolderPlay"
+  >
+    播放当前文件夹
+  </NButton>
   <NModal v-model:show="showDownload">
     <NCard
       style="width: 40%"
@@ -76,7 +85,7 @@
 </template>
 
 <script setup lang="tsx">
-  import type { ButtonProps, MenuOption, MenuProps } from 'naive-ui';
+  import type { MenuOption } from 'naive-ui';
   import { useMessage } from 'naive-ui';
   import { useMagicKeys } from '@vueuse/core';
   import { ref } from 'vue';
@@ -86,9 +95,7 @@
   import HlsJsPlugin from 'xgplayer-hls.js';
   import { Events } from 'xgplayer';
   import { settings, request } from '@/utils';
-
-  type ButtonThemeOverrides = NonNullable<ButtonProps['themeOverrides']>;
-  type MenuThemeOverrides = NonNullable<MenuProps['themeOverrides']>;
+  import { buttonThemeOverrides, menuThemeOverrides } from '@/utils/theme';
 
   interface DownloadItem {
     name: string;
@@ -114,20 +121,14 @@
     value: string;
   };
 
+  interface ForderFile {
+    n: string;
+    pc: string;
+  }
+
   const message = useMessage();
   const showDownload = ref(false);
   const showVideo = ref(false);
-  const buttonThemeOverrides: ButtonThemeOverrides = {
-    textColorTextHover: '#2777F8',
-    textColorTextPressed: '#2777F8',
-    textColorTextFocus: '#2777F8',
-  };
-  const menuThemeOverrides: MenuThemeOverrides = {
-    itemColorActive: '#EEF0FF',
-    itemColorActiveHover: '#EEF0FF',
-    itemTextColorActive: '#2777F8',
-    itemTextColorActiveHover: '#2777F8',
-  };
   const downloads = ref<DownloadItem[]>([]);
   const keys = useMagicKeys();
   const ctrlAltD = keys['Ctrl+Alt+D'];
@@ -190,12 +191,10 @@
         const download = await getDownLoadUrl(file);
         downloads.value.push(download);
       }
+      loading.destroy();
       if (downloads.value.length === 0) {
-        loading.destroy();
         message.error('获取下载链接失败');
-        return;
       } else {
-        loading.destroy();
         showDownload.value = true;
       }
     } catch (error) {
@@ -228,7 +227,7 @@
       videoList.value = [];
       for (const file of files) {
         if (file.isDir) {
-          message.error('暂不支持播放文件夹，请勿选择文件夹');
+          message.error('暂不支持选择文件夹播放，请勿选择文件夹');
           return;
         }
         if (file.fileMode === '9') {
@@ -242,75 +241,90 @@
         message.error('未选择视频文件');
         return;
       }
-      menuOptions.value = videoList.value.map((item) => {
-        return {
-          label: item.name,
-          key: item.code,
-        };
-      });
-      menuValue.value = videoList.value[0].code;
-      videoList.value[0].url = await getVideoUrl(videoList.value[0].code);
-      videoList.value[0].time = (await getVideoHistory(videoList.value[0].code)) || 0;
-      showVideo.value = true;
-      nextTick(() => {
-        if (videoRef.value) {
-          if (document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
-            player.value = new Player({
-              el: videoRef.value,
-              url: videoList.value[0].url,
-              autoplay: settings ? settings.video.autoplay : true,
-              fluid: true,
-              volume: settings ? settings.video.volume : 1,
-              defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
-              playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
-              rotate: true,
-              pip: true,
-              dynamicBg: {
-                disable: false,
-              },
-            });
-          } else if (HlsJsPlugin.isSupported()) {
-            player.value = new Player({
-              el: videoRef.value,
-              isLive: false,
-              url: videoList.value[0].url,
-              plugins: [HlsJsPlugin],
-              autoplay: settings ? settings.video.autoplay : true,
-              fluid: true,
-              volume: settings ? settings.video.volume : 1,
-              defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
-              playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
-              rotate: true,
-              pip: true,
-              dynamicBg: {
-                disable: false,
-              },
-            });
-          }
-          if (player.value) {
-            if (!settings || settings.video.history) {
-              player.value.currentTime = videoList.value[0].time!;
-              saveTimer.value = setInterval(() => {
-                if (player.value!.paused) {
-                  return;
-                }
-                const time = player.value!.currentTime;
-                if (time && Math.floor(time) !== videoList.value[0].time) {
-                  videoList.value[0].time = Math.floor(time);
-                  setVideoHistory(files[0].code, Math.floor(time));
-                }
-              }, 5000);
-            }
-            player.value.on(Events.VIDEO_RESIZE, () => {
-              layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
-            });
-          }
-        }
-      });
+      play();
     } catch (error) {
       console.error(error);
       message.error(`视频播放失败，错误信息：${error}`);
     }
+  };
+
+  const handleFolderPlay = async () => {
+    try {
+      const url = new URL(window.parent.location.href);
+      const files: ForderFile[] = await getForderFiles(url.searchParams.get('cid') as string);
+      if (files.length === 0) {
+        message.error('文件夹内没有视频文件');
+        return;
+      }
+      videoList.value = files.map((item) => {
+        return {
+          name: item.n,
+          code: item.pc,
+        };
+      });
+      play();
+    } catch (error) {
+      console.error(error);
+      message.error(`视频播放失败，错误信息：${error}`);
+    }
+  };
+
+  const play = async () => {
+    menuOptions.value = videoList.value.map((item) => {
+      return {
+        label: item.name,
+        key: item.code,
+      };
+    });
+    menuValue.value = videoList.value[0].code;
+    videoList.value[0].url = await getVideoUrl(videoList.value[0].code);
+    videoList.value[0].time = (await getVideoHistory(videoList.value[0].code)) || 0;
+    showVideo.value = true;
+    nextTick(() => {
+      if (videoRef.value) {
+        const playerConfig = {
+          el: videoRef.value,
+          url: videoList.value[0].url,
+          autoplay: settings ? settings.video.autoplay : true,
+          fluid: true,
+          volume: settings ? settings.video.volume : 1,
+          defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
+          playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
+          rotate: true,
+          pip: true,
+          dynamicBg: {
+            disable: false,
+          },
+        };
+        if (document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+          player.value = new Player(playerConfig);
+        } else if (HlsJsPlugin.isSupported()) {
+          player.value = new Player({
+            ...playerConfig,
+            isLive: false,
+            plugins: [HlsJsPlugin],
+          });
+        }
+        if (player.value) {
+          if (!settings || settings.video.history) {
+            player.value.currentTime = videoList.value[0].time!;
+            saveTimer.value = setInterval(() => {
+              if (player.value!.paused) {
+                return;
+              }
+              const time = player.value!.currentTime;
+              if (time && Math.floor(time) !== videoList.value[0].time) {
+                videoList.value[0].time = Math.floor(time);
+                setVideoHistory(videoList.value[0].code, Math.floor(time));
+              }
+            }, 5000);
+          }
+          player.value.on(Events.VIDEO_RESIZE, () => {
+            layoutMaxHeight.value = videoRef.value?.clientHeight + 'px';
+          });
+        }
+      }
+    });
   };
 
   const getVideoUrl = async (code: string) => {
@@ -432,6 +446,29 @@
         }
       });
     });
+  };
+
+  const getForderFiles = async (cid: string) => {
+    const cookie = await getCookie();
+    const res = await request({
+      method: 'GET',
+      url: `https://v.anxia.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=9999&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
+      headers: {
+        Cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
+          cookie.find((item) => item.name === 'SEID')?.value
+        };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      },
+    });
+    const json = JSON.parse(res.responseText);
+    if (json.state) {
+      return json.data;
+    } else {
+      if (json.error) {
+        throw new Error(json.error);
+      } else {
+        throw new Error('获取文件夹文件失败');
+      }
+    }
   };
 </script>
 
