@@ -127,9 +127,18 @@ if (!settings || settings.oldButton.enable) {
 }
 
 if (!settings || settings.fp.enable) {
-  const fp = document.querySelector('div[class|="fp"]') as HTMLElement;
+  const observer = new MutationObserver((mutationsList) => {
+    mutationsList.some((mutation) => {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        const fp = document.querySelector('div[class|="fp"]') as HTMLElement;
+        if (fp && fp.style.display !== 'none') {
+          fp.style.display = 'none';
+        }
+        return true;
+      }
+      return false;
+    });
+  });
 
-  if (fp) {
-    fp.style.display = 'none';
-  }
+  observer.observe(document.querySelector('body')!, { childList: true });
 }
