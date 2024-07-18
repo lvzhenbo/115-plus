@@ -126,8 +126,10 @@ if (!settings || settings.oldButton.enable) {
   }
 }
 
-const fp = document.querySelector('div[class|="fp"]') as HTMLElement;
+if (!settings || settings.fp.enable) {
+  const fp = document.querySelector('div[class|="fp"]') as HTMLElement;
 
-if (fp) {
-  fp.style.display = 'none';
+  if (fp) {
+    fp.style.display = 'none';
+  }
 }
