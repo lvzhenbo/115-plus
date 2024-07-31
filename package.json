@@ -20,16 +20,16 @@
     "big-integer": "^1.6.52",
     "crypto-js": "^4.2.0",
     "naive-ui": "^2.39.0",
-    "vue": "^3.4.32",
-    "xgplayer": "^3.0.18",
-    "xgplayer-hls.js": "^3.0.18"
+    "vue": "^3.4.35",
+    "xgplayer": "^3.0.19",
+    "xgplayer-hls.js": "^3.0.19"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.10.3",
+    "@rushstack/eslint-patch": "^1.10.4",
     "@tsconfig/node20": "^20.1.4",
     "@types/crypto-js": "^4.2.2",
-    "@types/node": "^20.14.11",
-    "@vitejs/plugin-vue": "^5.0.5",
+    "@types/node": "^20.14.13",
+    "@vitejs/plugin-vue": "^5.1.1",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",
@@ -39,13 +39,13 @@
     "npm-run-all2": "^6.2.2",
     "prettier": "^3.3.3",
     "release-it": "^17.6.0",
-    "typescript": "^5.5.3",
-    "unplugin-auto-import": "^0.18.0",
+    "typescript": "^5.5.4",
+    "unplugin-auto-import": "^0.18.2",
     "unplugin-vue-components": "^0.27.3",
-    "vite": "^5.3.4",
-    "vite-plugin-monkey": "^4.0.4",
+    "vite": "^5.3.5",
+    "vite-plugin-monkey": "^4.0.6",
     "vue-eslint-parser": "^9.4.3",
-    "vue-tsc": "^2.0.26"
+    "vue-tsc": "^2.0.29"
   },
   "release-it": {
     "git": {
