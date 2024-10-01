@@ -13,7 +13,14 @@ export default defineConfig({
     vue(),
     vueJsx(),
     AutoImport({
-      imports: ['vue', util.unimportPreset],
+      imports: [
+        'vue',
+        util.unimportPreset,
+        {
+          'naive-ui': ['useDialog', 'useMessage', 'useNotification', 'useLoadingBar', 'useOsTheme'],
+        },
+        '@vueuse/core',
+      ],
       eslintrc: {
         enabled: true,
       },

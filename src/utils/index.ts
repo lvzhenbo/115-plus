@@ -291,6 +291,8 @@ interface Req {
   method: 'GET' | 'POST';
   data?: string;
   headers?: Record<string, string>;
+  cookie?: string;
+  anonymous?: boolean;
 }
 
 interface ResponseType {
@@ -305,6 +307,8 @@ export const request = (req: Req): Promise<ResponseType> => {
       url: req.url,
       data: req.data,
       headers: req.headers,
+      cookie: req.cookie,
+      anonymous: req.anonymous,
       onload: (response) => {
         resolve(response);
       },

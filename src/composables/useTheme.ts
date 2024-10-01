@@ -1,4 +1,4 @@
-import { darkTheme, useOsTheme } from 'naive-ui';
+import { darkTheme } from 'naive-ui';
 import { settings } from '@/utils';
 
 export const useTheme = () => {
