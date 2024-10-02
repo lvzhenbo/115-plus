@@ -384,6 +384,9 @@
     request({
       method: 'POST',
       url: 'https://v.anxia.com/webapi/files/history',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
       };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
