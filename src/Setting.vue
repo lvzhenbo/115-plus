@@ -29,40 +29,13 @@
                 <NFormItem label="精简侧边栏" path="sidebar.enable">
                   <NSwitch v-model:value="settingsRef.sidebar.enable" />
                 </NFormItem>
-                <NFormItem label="默认删除源文件" path="deleteSource.enable">
-                  <template #label>
-                    默认删除源文件
-                    <NPopover trigger="hover">
-                      <template #trigger>
-                        <NIcon size="14">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            xmlns:xlink="http://www.w3.org/1999/xlink"
-                            viewBox="0 0 1024 1024"
-                          >
-                            <path
-                              d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448s448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372s372 166.6 372 372s-166.6 372-372 372z"
-                              fill="currentColor"
-                            ></path>
-                            <path
-                              d="M464 336a48 48 0 1 0 96 0a48 48 0 1 0-96 0zm72 112h-48c-4.4 0-8 3.6-8 8v272c0 4.4 3.6 8 8 8h48c4.4 0 8-3.6 8-8V456c0-4.4-3.6-8-8-8z"
-                              fill="currentColor"
-                            ></path>
-                          </svg>
-                        </NIcon>
-                      </template>
-                      <span>删除离线下载项时可默认选择删除源文件</span>
-                    </NPopover>
-                  </template>
-                  <NSwitch v-model:value="settingsRef.deleteSource.enable" />
-                </NFormItem>
                 <NFormItem label="下载文件" path="download.enable">
                   <NSwitch v-model:value="settingsRef.download.enable" />
                 </NFormItem>
                 <NFormItem label="批量新标签打开" path="openNewTab.enable">
                   <NSwitch v-model:value="settingsRef.openNewTab.enable" />
                 </NFormItem>
-                <NFormItem label="还原离线下载按钮" path="oldButton.enable">
+                <NFormItem label="自定义离线下载按钮和云下载列表" path="oldButton.enable">
                   <NSwitch v-model:value="settingsRef.oldButton.enable" />
                 </NFormItem>
                 <NFormItem label="视频播放" path="video.enable">
@@ -112,6 +85,13 @@
                 </NFormItem>
               </NForm>
             </NTabPane>
+            <NTabPane name="cloudDownloadSetting" tab="离线下载设置">
+              <NForm ref="formRef" label-placement="left" label-width="auto" :show-feedback="false">
+                <NFormItem label="默认删除源文件" path="oldButton.deleteSource">
+                  <NSwitch v-model:value="settingsRef.oldButton.deleteSource" />
+                </NFormItem>
+              </NForm>
+            </NTabPane>
           </NTabs>
           <template #action>
             <div style="display: flex; justify-content: end">
@@ -137,9 +117,6 @@
       sidebar: {
         enable: true,
       },
-      deleteSource: {
-        enable: true,
-      },
       download: {
         enable: true,
       },
@@ -148,6 +125,7 @@
       },
       oldButton: {
         enable: true,
+        deleteSource: true,
       },
       video: {
         enable: true,

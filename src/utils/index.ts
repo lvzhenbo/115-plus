@@ -257,9 +257,6 @@ export interface Settings {
   sidebar: {
     enable: boolean;
   };
-  deleteSource: {
-    enable: boolean;
-  };
   download: {
     enable: boolean;
   };
@@ -268,6 +265,7 @@ export interface Settings {
   };
   oldButton: {
     enable: boolean;
+    deleteSource: boolean;
   };
   video: {
     enable: boolean;

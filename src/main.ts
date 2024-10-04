@@ -31,6 +31,16 @@ if (settings) {
     };
     flag = true;
   }
+  if (typeof settings.oldButton.deleteSource !== 'boolean') {
+    newSettings = {
+      ...newSettings,
+      oldButton: {
+        enable: settings.oldButton.enable,
+        deleteSource: true,
+      },
+    };
+    flag = true;
+  }
   GM_setValue('settings', newSettings);
   if (flag) {
     message.loading('115+ 功能更新中，即将刷新页面……');
@@ -85,62 +95,24 @@ if (!settings || settings.download.enable || settings.openNewTab.enable || setti
   );
 }
 
-createApp(CloudDownload).mount(
-  (() => {
-    const upload_btn_add_dir = document.querySelector('a[data-dropdown-tab="upload_btn_add_dir"]');
-    const cloudDownload = document.createElement('div');
-    cloudDownload.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-    });
-    cloudDownload.style.display = 'inline-block';
-    if (upload_btn_add_dir) {
-      upload_btn_add_dir.parentNode!.insertBefore(cloudDownload, upload_btn_add_dir.nextSibling);
-    }
-    return cloudDownload;
-  })(),
-);
-
-// 默认删除源文件功能
-if (!settings || settings.deleteSource.enable) {
-  const observer = new MutationObserver((mutationsList) => {
-    mutationsList.some((mutation) => {
-      if (
-        mutation.type === 'childList' &&
-        mutation.addedNodes.length > 0 &&
-        (mutation.addedNodes[0] as HTMLElement).className ===
-          'dialog-box dialog-mini window-current'
-      ) {
-        const checkBox = document.querySelector('#js_del_task_source') as HTMLInputElement;
-        if (checkBox) {
-          checkBox.checked = true;
-        }
-        return true;
+if (!settings || settings.oldButton.enable) {
+  createApp(CloudDownload).mount(
+    (() => {
+      const upload_btn_add_dir = document.querySelector(
+        'a[data-dropdown-tab="upload_btn_add_dir"]',
+      );
+      const cloudDownload = document.createElement('div');
+      cloudDownload.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+      cloudDownload.style.display = 'inline-block';
+      if (upload_btn_add_dir) {
+        upload_btn_add_dir.parentNode!.insertBefore(cloudDownload, upload_btn_add_dir.nextSibling);
       }
-      return false;
-    });
-  });
-
-  observer.observe(document.querySelector('body')!, { childList: true });
+      return cloudDownload;
+    })(),
+  );
 }
-
-// 还原离线下载按钮
-// if (!settings || settings.oldButton.enable) {
-//   const leftTvf = document.querySelector('.left-tvf') as HTMLElement;
-
-//   const replaceNodeWithDiv = (parentNode: HTMLElement, index: number) => {
-//     const node = parentNode.childNodes[index];
-//     if (node.nodeType === 8 && node.nodeValue!.includes('href')) {
-//       const div = document.createElement('div');
-//       div.innerHTML = node.nodeValue!;
-//       parentNode.replaceChild(div, node);
-//     }
-//   };
-
-//   if (leftTvf) {
-//     replaceNodeWithDiv(leftTvf, 9);
-//     replaceNodeWithDiv(leftTvf, 11);
-//   }
-// }
 
 if (!settings || settings.fp.enable) {
   const observer = new MutationObserver((mutationsList) => {

@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="tsx">
-  import { request } from '@/utils';
+  import { request, settings } from '@/utils';
   import {
     type DataTableColumns,
     NProgress,
@@ -26,6 +26,7 @@
     NButton,
     NIcon,
     NSpace,
+    NCheckbox,
   } from 'naive-ui';
   import { filesize } from 'filesize';
   import { FolderOutlined, CopyOutlined, DeleteOutlined } from '@vicons/antd';
@@ -40,6 +41,7 @@
   }
 
   const message = useMessage();
+  const dialog = useDialog();
   const { copy } = useClipboard();
   const signData = ref({
     sign: '',
@@ -72,6 +74,7 @@
     {
       title: '进度',
       key: 'percentDone',
+      width: 300,
       render(row) {
         if (row.percentDone === 100) {
           return '已完成';
@@ -118,7 +121,39 @@
                 ),
               }}
             </NButton>
-            <NButton text>
+            <NButton
+              text
+              onClick={() => {
+                dialog.warning({
+                  title: '信息提示',
+                  content: () => (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          marginBottom: '10px',
+                        }}
+                      >
+                        是否确认删除该下载任务？
+                      </div>
+                      <NCheckbox v-model:checked={flag.value} checked-value={1} unchecked-value={0}>
+                        删除源文件
+                      </NCheckbox>
+                    </div>
+                  ),
+                  positiveText: '确定',
+                  negativeText: '取消',
+                  onPositiveClick: () => {
+                    handleDelete(row.info_hash);
+                  },
+                });
+              }}
+            >
               {{
                 icon: () => (
                   <NIcon>
@@ -139,10 +174,14 @@
     pageSize: 30,
   });
   const loading = ref(false);
+  const flag = ref(0);
 
   onMounted(() => {
     getSign();
     getDownPath();
+    if (settings?.oldButton.deleteSource) {
+      flag.value = 1;
+    }
   });
 
   const getSign = async () => {
@@ -207,12 +246,10 @@
       });
       const json = JSON.parse(res.responseText);
       if (json.state) {
-        console.log(json);
         data.value = json.tasks;
         pagination.page = json.page;
         pagination.pageCount = json.page_count;
         pagination.itemCount = json.count;
-        // console.log(pagination);
       } else {
         if (json.error) {
           throw new Error(json.error);
@@ -235,8 +272,41 @@
   };
 
   const handlePageChange = (page: number) => {
-    // pagination.page = page;
     getList(page);
+  };
+
+  const handleDelete = async (hash: string) => {
+    try {
+      const sp = new URLSearchParams();
+      sp.append('sign', signData.value.sign);
+      sp.append('time', signData.value.time);
+      sp.append('hash[0]', hash);
+      sp.append('uid', downPath.value.user_id);
+      if (flag.value) {
+        sp.append('flag', flag.value.toString());
+      }
+      const res = await request({
+        url: `https://115.com/web/lixian/?ct=lixian&ac=task_del`,
+        method: 'POST',
+        data: sp,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      const json = JSON.parse(res.responseText);
+      if (json.state) {
+        message.success('删除成功');
+        getList();
+      } else {
+        if (json.error) {
+          throw new Error(json.error);
+        } else {
+          throw new Error('删除失败');
+        }
+      }
+    } catch (error: any) {
+      message.error(error);
+    }
   };
 </script>
 

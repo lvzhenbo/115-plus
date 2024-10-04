@@ -1,10 +1,12 @@
 <template>
   <NConfigProvider :theme>
-    <NModalProvider>
-      <NMessageProvider>
-        <CloudDownloadContent />
-      </NMessageProvider>
-    </NModalProvider>
+    <NDialogProvider>
+      <NModalProvider>
+        <NMessageProvider>
+          <CloudDownloadContent />
+        </NMessageProvider>
+      </NModalProvider>
+    </NDialogProvider>
   </NConfigProvider>
 </template>
 
