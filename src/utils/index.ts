@@ -289,7 +289,7 @@ export const settings: Settings | null = GM_getValue('settings', null);
 interface Req {
   url: string;
   method: 'GET' | 'POST';
-  data?: string;
+  data?: string | URLSearchParams | FormData | ArrayBuffer | Blob | DataView | ReadableStream;
   headers?: Record<string, string>;
   cookie?: string;
   anonymous?: boolean;
@@ -315,6 +315,30 @@ export const request = (req: Req): Promise<ResponseType> => {
       onerror: (error) => {
         reject(error);
       },
+    });
+  });
+};
+
+type CbCookie = {
+  domain: string;
+  hostOnly: boolean;
+  httpOnly: boolean;
+  name: string;
+  path: string;
+  sameSite: string;
+  secure: boolean;
+  session: boolean;
+  value: string;
+};
+
+export const getCookie = (): Promise<CbCookie[]> => {
+  return new Promise((resolve, reject) => {
+    GM_cookie.list({ domain: '115.com' }, (cookie, error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(cookie);
+      }
     });
   });
 };

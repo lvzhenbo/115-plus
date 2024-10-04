@@ -58,35 +58,33 @@
       </NList>
     </NCard>
   </NModal>
-  <NModal v-model:show="showVideo" @after-leave="handleVideoClose">
-    <NCard
-      style="width: 60%"
-      title="视频播放"
-      :bordered="false"
-      role="dialog"
-      closable
-      @close="handleVideoClose"
-    >
-      <NLayout has-sider :content-style="{ 'max-height': layoutMaxHeight }">
-        <NLayoutSider :native-scrollbar="false" bordered>
-          <NMenu
-            v-model:value="menuValue"
-            :options="menuOptions"
-            :theme-overrides="menuThemeOverrides"
-            @update:value="handleMenuUpdate"
-          />
-        </NLayoutSider>
-        <NLayout :native-scrollbar="false">
-          <div ref="videoRef" class="video-js"></div>
-        </NLayout>
+  <NModal
+    v-model:show="showVideo"
+    style="width: 60%"
+    title="视频播放"
+    preset="card"
+    :bordered="false"
+    @after-leave="handleVideoClose"
+  >
+    <NLayout has-sider :content-style="{ 'max-height': layoutMaxHeight }">
+      <NLayoutSider :native-scrollbar="false" bordered>
+        <NMenu
+          v-model:value="menuValue"
+          :options="menuOptions"
+          :theme-overrides="menuThemeOverrides"
+          @update:value="handleMenuUpdate"
+        />
+      </NLayoutSider>
+      <NLayout :native-scrollbar="false">
+        <div ref="videoRef" class="video-js"></div>
       </NLayout>
-    </NCard>
+    </NLayout>
   </NModal>
 </template>
 
 <script setup lang="tsx">
   import type { MenuOption } from 'naive-ui';
-  import { getDownLoadUrl, type FileItem } from '@/utils';
+  import { getCookie, getDownLoadUrl, type FileItem } from '@/utils';
   import Player from 'xgplayer';
   import 'xgplayer/dist/index.min.css';
   import HlsJsPlugin from 'xgplayer-hls.js';
@@ -105,18 +103,6 @@
     url?: string;
     time?: number;
   }
-
-  type CbCookie = {
-    domain: string;
-    hostOnly: boolean;
-    httpOnly: boolean;
-    name: string;
-    path: string;
-    sameSite: string;
-    secure: boolean;
-    session: boolean;
-    value: string;
-  };
 
   interface ForderFile {
     n: string;
@@ -431,18 +417,6 @@
     }
   };
 
-  const getCookie = (): Promise<CbCookie[]> => {
-    return new Promise((resolve, reject) => {
-      GM_cookie.list({ domain: '115.com' }, (cookie, error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(cookie);
-        }
-      });
-    });
-  };
-
   const getForderFiles = async (cid: string) => {
     const cookie = await getCookie();
     const res = await request({
@@ -466,8 +440,4 @@
   };
 </script>
 
-<style scoped>
-  :deep(.n-base-icon) {
-    font-size: 18px;
-  }
-</style>
+<style scoped></style>

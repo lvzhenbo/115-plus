@@ -36,7 +36,7 @@ export default defineConfig({
         match: ['https://115.com/*'],
         name: '115+',
         description: '为115网盘添加一些功能',
-        connect: ['proapi.115.com', 'v.anxia.com'],
+        connect: ['115.com', 'v.anxia.com'],
         supportURL: 'https://github.com/lvzhenbo/115-plus/issues',
       },
       build: {

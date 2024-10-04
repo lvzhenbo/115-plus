@@ -2,8 +2,10 @@ import { createApp } from 'vue';
 import Sidebar from './Sidebar.vue';
 import Download from './Download.vue';
 import Setting from './Setting.vue';
+import CloudDownload from './CloudDownload.vue';
 import { settings } from './utils';
 import { createDiscreteApi } from 'naive-ui';
+import './styles/index.css';
 
 const { message } = createDiscreteApi(['message']);
 
@@ -83,8 +85,22 @@ if (!settings || settings.download.enable || settings.openNewTab.enable || setti
   );
 }
 
-// 默认删除源文件功能
+createApp(CloudDownload).mount(
+  (() => {
+    const upload_btn_add_dir = document.querySelector('a[data-dropdown-tab="upload_btn_add_dir"]');
+    const cloudDownload = document.createElement('div');
+    cloudDownload.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    });
+    cloudDownload.style.display = 'inline-block';
+    if (upload_btn_add_dir) {
+      upload_btn_add_dir.parentNode!.insertBefore(cloudDownload, upload_btn_add_dir.nextSibling);
+    }
+    return cloudDownload;
+  })(),
+);
 
+// 默认删除源文件功能
 if (!settings || settings.deleteSource.enable) {
   const observer = new MutationObserver((mutationsList) => {
     mutationsList.some((mutation) => {
@@ -108,23 +124,23 @@ if (!settings || settings.deleteSource.enable) {
 }
 
 // 还原离线下载按钮
-if (!settings || settings.oldButton.enable) {
-  const leftTvf = document.querySelector('.left-tvf') as HTMLElement;
+// if (!settings || settings.oldButton.enable) {
+//   const leftTvf = document.querySelector('.left-tvf') as HTMLElement;
 
-  const replaceNodeWithDiv = (parentNode: HTMLElement, index: number) => {
-    const node = parentNode.childNodes[index];
-    if (node.nodeType === 8 && node.nodeValue!.includes('href')) {
-      const div = document.createElement('div');
-      div.innerHTML = node.nodeValue!;
-      parentNode.replaceChild(div, node);
-    }
-  };
+//   const replaceNodeWithDiv = (parentNode: HTMLElement, index: number) => {
+//     const node = parentNode.childNodes[index];
+//     if (node.nodeType === 8 && node.nodeValue!.includes('href')) {
+//       const div = document.createElement('div');
+//       div.innerHTML = node.nodeValue!;
+//       parentNode.replaceChild(div, node);
+//     }
+//   };
 
-  if (leftTvf) {
-    replaceNodeWithDiv(leftTvf, 9);
-    replaceNodeWithDiv(leftTvf, 11);
-  }
-}
+//   if (leftTvf) {
+//     replaceNodeWithDiv(leftTvf, 9);
+//     replaceNodeWithDiv(leftTvf, 11);
+//   }
+// }
 
 if (!settings || settings.fp.enable) {
   const observer = new MutationObserver((mutationsList) => {
