@@ -15,6 +15,7 @@
   }
 
   const message = useMessage();
+  const isLeft = usePageLeave();
   const bc = new BroadcastChannel('115Plus');
   const showList = ref(false);
   const showDownload = ref(false);
@@ -32,6 +33,9 @@
   onMounted(async () => {
     bc.onmessage = (event) => {
       console.log(event.data);
+      if (isLeft.value) {
+        return;
+      }
       if (event.data.type === 'CloudDownload') {
         showList.value = true;
       } else if (event.data.type === 'VideoPlay') {
