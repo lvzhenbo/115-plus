@@ -1,12 +1,8 @@
 <template>
   <NConfigProvider :theme>
-    <NDialogProvider>
-      <NModalProvider>
-        <NMessageProvider>
-          <CloudDownloadContent />
-        </NMessageProvider>
-      </NModalProvider>
-    </NDialogProvider>
+    <NDropdown trigger="hover" :options="options" @select="handleSelect">
+      <NButton>离线下载</NButton>
+    </NDropdown>
   </NConfigProvider>
 </template>
 
@@ -14,6 +10,21 @@
   import { useTheme } from '@/composables/useTheme';
 
   const theme = useTheme();
+  const options = [
+    {
+      label: '云下载',
+      key: 'CloudDownload',
+    },
+  ];
+  const bc = new BroadcastChannel('115Plus');
+
+  const handleSelect = (option: string) => {
+    if (option === 'CloudDownload') {
+      bc.postMessage({
+        type: 'CloudDownload',
+      });
+    }
+  };
 </script>
 
 <style scoped></style>

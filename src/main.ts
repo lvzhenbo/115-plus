@@ -3,6 +3,7 @@ import Sidebar from './Sidebar.vue';
 import Download from './Download.vue';
 import Setting from './Setting.vue';
 import CloudDownload from './CloudDownload.vue';
+import App from './App.vue';
 import { settings } from './utils';
 import { createDiscreteApi } from 'naive-ui';
 import './styles/index.css';
@@ -48,6 +49,18 @@ if (settings) {
       window.location.reload();
     }, 3000);
   }
+}
+if (window.top === window.self) {
+  createApp(App).mount(
+    (() => {
+      const body = document.querySelector('body');
+      const app = document.createElement('div');
+      if (body) {
+        body.appendChild(app);
+      }
+      return app;
+    })(),
+  );
 }
 
 createApp(Setting).mount(

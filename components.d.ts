@@ -7,7 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    CloudDownloadContent: typeof import('./src/components/CloudDownloadContent.vue')['default']
+    AppContent: typeof import('./src/components/AppContent.vue')['default']
+    CloudDownloadModal: typeof import('./src/components/CloudDownloadModal.vue')['default']
     DownloadContent: typeof import('./src/components/DownloadContent.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NCard: typeof import('naive-ui')['NCard']
@@ -26,7 +27,6 @@ declare module 'vue' {
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NModal: typeof import('naive-ui')['NModal']
     NModalProvider: typeof import('naive-ui')['NModalProvider']
-    NPopover: typeof import('naive-ui')['NPopover']
     NRadio: typeof import('naive-ui')['NRadio']
     NRadioGroup: typeof import('naive-ui')['NRadioGroup']
     NSlider: typeof import('naive-ui')['NSlider']
@@ -34,5 +34,6 @@ declare module 'vue' {
     NSwitch: typeof import('naive-ui')['NSwitch']
     NTabPane: typeof import('naive-ui')['NTabPane']
     NTabs: typeof import('naive-ui')['NTabs']
+    VideoModal: typeof import('./src/components/VideoModal.vue')['default']
   }
 }

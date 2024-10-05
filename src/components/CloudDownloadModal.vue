@@ -1,8 +1,5 @@
 <template>
-  <NDropdown trigger="hover" :options="options" @select="handleSelect">
-    <NButton>离线下载</NButton>
-  </NDropdown>
-  <NModal v-model:show="showList" style="width: 80%" title="云下载" preset="card" :bordered="false">
+  <NModal v-model:show="show" style="width: 80%" title="云下载" preset="card" :bordered="false">
     <NDataTable
       remote
       flex-height
@@ -18,7 +15,7 @@
 </template>
 
 <script setup lang="tsx">
-  import { request, settings } from '@/utils';
+  import { request, settings, getCookie } from '@/utils';
   import {
     type DataTableColumns,
     NProgress,
@@ -40,6 +37,11 @@
     percentDone: number;
   }
 
+  const show = defineModel('show', {
+    type: Boolean,
+    default: false,
+  });
+
   const message = useMessage();
   const dialog = useDialog();
   const { copy } = useClipboard();
@@ -51,13 +53,6 @@
     file_id: '',
     user_id: '',
   });
-  const showList = ref(false);
-  const options = [
-    {
-      label: '云下载',
-      key: 'CloudDownload',
-    },
-  ];
   const columns: DataTableColumns<ListData> = [
     {
       title: '文件名',
@@ -176,11 +171,20 @@
   const loading = ref(false);
   const flag = ref(0);
 
-  onMounted(() => {
-    getSign();
-    getDownPath();
-    if (settings?.oldButton.deleteSource) {
-      flag.value = 1;
+  onMounted(async () => {
+    const cookies = await getCookie();
+    if (cookies.find((item) => item.name === 'UID')) {
+      getSign();
+      getDownPath();
+      if (settings?.oldButton.deleteSource) {
+        flag.value = 1;
+      }
+    }
+  });
+
+  watch(show, (value) => {
+    if (value) {
+      getList();
     }
   });
 
@@ -261,13 +265,6 @@
       message.error(error);
     } finally {
       loading.value = false;
-    }
-  };
-
-  const handleSelect = (option: string) => {
-    if (option === 'CloudDownload') {
-      showList.value = true;
-      getList();
     }
   };
 
