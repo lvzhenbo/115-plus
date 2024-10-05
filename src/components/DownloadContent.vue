@@ -193,7 +193,7 @@
       bc.postMessage({
         type: 'VideoPlay',
         data: JSON.stringify(videoList.value),
-        url: window.location.href,
+        url: window.top?.location.href,
       });
     } catch (error) {
       console.error(error);
@@ -218,7 +218,7 @@
       bc.postMessage({
         type: 'VideoPlay',
         data: JSON.stringify(videoList.value),
-        url: window.location.href,
+        url: window.top?.location.href,
       });
     } catch (error) {
       console.error(error);
