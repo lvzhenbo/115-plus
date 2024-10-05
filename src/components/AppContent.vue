@@ -33,7 +33,7 @@
   onMounted(async () => {
     bc.onmessage = (event) => {
       console.log(event.data);
-      if (isLeft.value && event.data.url !== window.location.href) {
+      if (isLeft.value || event.data.url !== window.location.href) {
         return;
       }
       if (event.data.type === 'CloudDownload') {
