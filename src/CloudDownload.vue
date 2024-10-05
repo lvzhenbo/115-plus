@@ -22,6 +22,7 @@
     if (option === 'CloudDownload') {
       bc.postMessage({
         type: 'CloudDownload',
+        url: window.location.href,
       });
     }
   };
@@ -29,6 +30,7 @@
   const handleDownload = () => {
     bc.postMessage({
       type: 'OfflineDownload',
+      url: window.location.href,
     });
   };
 </script>
