@@ -65,57 +65,62 @@
   });
 
   const play = async () => {
-    menuOptions.value = videoList.value.map((item) => {
-      return {
-        label: item.name,
-        key: item.code,
-      };
-    });
-    menuValue.value = videoList.value[0].code;
-    videoList.value[0].url = await getVideoUrl(videoList.value[0].code);
-    videoList.value[0].time = (await getVideoHistory(videoList.value[0].code)) || 0;
-    if (videoRef.value) {
-      const playerConfig = {
-        el: videoRef.value,
-        url: videoList.value[0].url,
-        autoplay: settings ? settings.video.autoplay : true,
-        fluid: true,
-        volume: settings ? settings.video.volume : 1,
-        defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
-        playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
-        rotate: true,
-        pip: true,
-        dynamicBg: {
-          disable: false,
-        },
-      };
-      if (document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
-        player.value = new Player(playerConfig);
-      } else if (HlsJsPlugin.isSupported()) {
-        player.value = new Player({
-          ...playerConfig,
-          isLive: false,
-          plugins: [HlsJsPlugin],
-        });
-      }
-      if (player.value) {
-        if (!settings || settings.video.history) {
-          player.value.currentTime = videoList.value[0].time!;
-          saveTimer.value = setInterval(() => {
-            if (player.value!.paused) {
-              return;
-            }
-            const time = player.value!.currentTime;
-            if (time && Math.floor(time) !== videoList.value[0].time) {
-              videoList.value[0].time = Math.floor(time);
-              setVideoHistory(videoList.value[0].code, Math.floor(time));
-            }
-          }, 5000);
+    try {
+      menuOptions.value = videoList.value.map((item) => {
+        return {
+          label: item.name,
+          key: item.code,
+        };
+      });
+      menuValue.value = videoList.value[0].code;
+      videoList.value[0].url = await getVideoUrl(videoList.value[0].code);
+      videoList.value[0].time = (await getVideoHistory(videoList.value[0].code)) || 0;
+      if (videoRef.value) {
+        const playerConfig = {
+          el: videoRef.value,
+          url: videoList.value[0].url,
+          autoplay: settings ? settings.video.autoplay : true,
+          fluid: true,
+          volume: settings ? settings.video.volume : 1,
+          defaultPlaybackRate: settings ? settings.video.defaultPlaybackRate : 1,
+          playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
+          rotate: true,
+          pip: true,
+          dynamicBg: {
+            disable: false,
+          },
+        };
+        if (document.createElement('video').canPlayType('application/vnd.apple.mpegurl')) {
+          player.value = new Player(playerConfig);
+        } else if (HlsJsPlugin.isSupported()) {
+          player.value = new Player({
+            ...playerConfig,
+            isLive: false,
+            plugins: [HlsJsPlugin],
+          });
         }
-        player.value.on(Events.VIDEO_RESIZE, () => {
-          layoutHeight.value = videoRef.value?.clientHeight || 700;
-        });
+        if (player.value) {
+          if (!settings || settings.video.history) {
+            player.value.currentTime = videoList.value[0].time!;
+            saveTimer.value = setInterval(() => {
+              if (player.value!.paused) {
+                return;
+              }
+              const time = player.value!.currentTime;
+              if (time && Math.floor(time) !== videoList.value[0].time) {
+                videoList.value[0].time = Math.floor(time);
+                setVideoHistory(videoList.value[0].code, Math.floor(time));
+              }
+            }, 5000);
+          }
+          player.value.on(Events.VIDEO_RESIZE, () => {
+            layoutHeight.value = videoRef.value?.clientHeight || 700;
+          });
+        }
       }
+    } catch (error) {
+      console.error(error);
+      message.error(`视频播放失败，错误信息：${error}`);
     }
   };
 
