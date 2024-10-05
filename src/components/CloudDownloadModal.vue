@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="tsx">
-  import { request, settings, getCookie } from '@/utils';
+  import { request, settings } from '@/utils';
   import {
     type DataTableColumns,
     NProgress,
@@ -42,17 +42,20 @@
     default: false,
   });
 
+  const props = defineProps<{
+    signData: {
+      sign: string;
+      time: string;
+    };
+    downPath: {
+      file_id: string;
+      user_id: string;
+    };
+  }>();
+
   const message = useMessage();
   const dialog = useDialog();
   const { copy } = useClipboard();
-  const signData = ref({
-    sign: '',
-    time: '',
-  });
-  const downPath = ref({
-    file_id: '',
-    user_id: '',
-  });
   const columns: DataTableColumns<ListData> = [
     {
       title: '文件名',
@@ -171,14 +174,9 @@
   const loading = ref(false);
   const flag = ref(0);
 
-  onMounted(async () => {
-    const cookies = await getCookie();
-    if (cookies.find((item) => item.name === 'UID')) {
-      getSign();
-      getDownPath();
-      if (settings?.oldButton.deleteSource) {
-        flag.value = 1;
-      }
+  onMounted(() => {
+    if (settings?.oldButton.deleteSource) {
+      flag.value = 1;
     }
   });
 
@@ -188,58 +186,14 @@
     }
   });
 
-  const getSign = async () => {
-    try {
-      const res = await request({
-        url: `https://115.com/?ct=offline&ac=space&_${Date.now()}`,
-        method: 'GET',
-      });
-      const json = JSON.parse(res.responseText);
-      if (json.state) {
-        signData.value.sign = json.sign;
-        signData.value.time = json.time;
-      } else {
-        if (json.error) {
-          throw new Error(json.error);
-        } else {
-          throw new Error('获取签名失败');
-        }
-      }
-    } catch (error: any) {
-      message.error(error);
-    }
-  };
-
-  const getDownPath = async () => {
-    try {
-      const res = await request({
-        url: `https://webapi.115.com/offine/downpath`,
-        method: 'GET',
-      });
-      const json = JSON.parse(res.responseText);
-      if (json.state) {
-        downPath.value.file_id = json.data[0].file_id;
-        downPath.value.user_id = json.data[0].user_id;
-      } else {
-        if (json.error) {
-          throw new Error(json.error);
-        } else {
-          throw new Error('获取云下载路径失败');
-        }
-      }
-    } catch (error: any) {
-      message.error(error);
-    }
-  };
-
   const getList = async (page?: number) => {
     try {
       loading.value = true;
       const sp = new URLSearchParams();
-      sp.append('sign', signData.value.sign);
-      sp.append('time', signData.value.time);
+      sp.append('sign', props.signData.sign);
+      sp.append('time', props.signData.time);
       sp.append('page', page ? page.toString() : pagination.page!.toString());
-      sp.append('uid', downPath.value.user_id);
+      sp.append('uid', props.downPath.user_id);
       const res = await request({
         url: `https://115.com/web/lixian/?ct=lixian&ac=task_lists`,
         method: 'POST',
@@ -275,10 +229,10 @@
   const handleDelete = async (hash: string) => {
     try {
       const sp = new URLSearchParams();
-      sp.append('sign', signData.value.sign);
-      sp.append('time', signData.value.time);
+      sp.append('sign', props.signData.sign);
+      sp.append('time', props.signData.time);
       sp.append('hash[0]', hash);
-      sp.append('uid', downPath.value.user_id);
+      sp.append('uid', props.downPath.user_id);
       if (flag.value) {
         sp.append('flag', flag.value.toString());
       }

@@ -1,7 +1,7 @@
 <template>
   <NConfigProvider :theme>
     <NDropdown trigger="hover" :options="options" @select="handleSelect">
-      <NButton>离线下载</NButton>
+      <NButton @click="handleDownload">离线下载</NButton>
     </NDropdown>
   </NConfigProvider>
 </template>
@@ -24,6 +24,12 @@
         type: 'CloudDownload',
       });
     }
+  };
+
+  const handleDownload = () => {
+    bc.postMessage({
+      type: 'OfflineDownload',
+    });
   };
 </script>
 
