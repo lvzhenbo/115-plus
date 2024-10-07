@@ -10,7 +10,7 @@
       <NInput
         v-model:value="url"
         type="textarea"
-        placeholder="支持HTTP、HTTPS、FTP、磁力链和电驴链接，由于一些原因暂时不支持多个链接同时添加"
+        placeholder="支持HTTP、HTTPS、FTP、磁力链和电驴链接，换行可添加多个"
         clearable
         :rows="10"
       />
@@ -40,6 +40,47 @@
       frameborder="0"
       style="width: 100%; height: 500px"
     ></iframe>
+  </NModal>
+  <NModal
+    v-model:show="showResult"
+    title="下载任务错误列表"
+    style="width: 40%"
+    preset="card"
+    :close-on-esc="false"
+    :mask-closable="false"
+    @after-leave="
+      () => {
+        resultData.success = 0;
+        resultData.fail = 0;
+        resultData.list = [];
+      }
+    "
+  >
+    <NResult status="warning" size="small" :title="resultTitle">
+      <NList>
+        <template #header> 失败任务列表： </template>
+        <NScrollbar style="max-height: 120px">
+          <NListItem v-for="(item, index) in resultData.list" :key="index">
+            <div style="display: flex; justify-content: space-between">
+              <NEllipsis style="max-width: 300px">
+                {{ item.url }}
+              </NEllipsis>
+              <div>
+                <NText type="error">
+                  {{ item.error }}
+                </NText>
+              </div>
+            </div>
+          </NListItem>
+        </NScrollbar>
+      </NList>
+      <template #footer>
+        <NSpace justify="end">
+          <NButton @click="handleCencel">取消</NButton>
+          <NButton type="primary" @click="showResult = false">重试</NButton>
+        </NSpace>
+      </template>
+    </NResult>
   </NModal>
 </template>
 
@@ -71,6 +112,19 @@
   });
   const showCaptcha = ref(false);
   const iframe = ref<HTMLIFrameElement | null>(null);
+  const showResult = ref(false);
+  const resultData = ref({
+    success: 0,
+    fail: 0,
+    list: [] as { url: string; error: string }[],
+  });
+  const resultTitle = computed(() => {
+    return (
+      (resultData.value.success ? resultData.value.success + '个任务添加成功，' : '') +
+      resultData.value.fail +
+      '个任务添加失败'
+    );
+  });
 
   watch(show, (value) => {
     if (value) {
@@ -108,12 +162,19 @@
       const sp = new URLSearchParams();
       sp.append('savepath', '');
       sp.append('wp_path_id', pathId.value ? pathId.value : props.downPath.file_id);
-      sp.append('url', url.value);
+      const urls = url.value.split('\n').filter((item) => item.trim());
+      if (urls.length > 1) {
+        urls.forEach((item, index) => {
+          sp.append(`url[${index}]`, item);
+        });
+      } else {
+        sp.append('url', urls[0]);
+      }
       sp.append('uid', props.downPath.user_id);
       sp.append('sign', props.signData.sign);
       sp.append('time', props.signData.time);
       const res = await request({
-        url: `https://115.com/web/lixian/?ct=lixian&ac=add_task_url`,
+        url: `https://115.com/web/lixian/?ct=lixian&ac=add_task_url${urls.length > 1 ? 's' : ''}`,
         method: 'POST',
         data: sp,
         headers: {
@@ -125,6 +186,20 @@
       });
       const json = JSON.parse(res.responseText);
       if (json.state) {
+        if (urls.length > 1) {
+          json.result.forEach((item: { state: boolean; url: string; error_msg?: string }) => {
+            if (item.state) {
+              resultData.value.success++;
+            } else {
+              resultData.value.fail++;
+              resultData.value.list.push({ url: item.url, error: item.error_msg || '未知原因' });
+            }
+          });
+          if (resultData.value.fail) {
+            showResult.value = true;
+            return;
+          }
+        }
         message.success('添加下载成功');
         show.value = false;
         url.value = '';
@@ -156,6 +231,11 @@
     } catch (error: any) {
       message.error(error);
     }
+  };
+
+  const handleCencel = () => {
+    showResult.value = false;
+    show.value = false;
   };
 </script>
 
