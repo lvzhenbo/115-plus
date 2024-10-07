@@ -22,6 +22,8 @@ const gKeyS = [0x29, 0x23, 0x21, 0x5e];
 const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
 const md5 = CryptoJS.MD5;
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const getDownLoadUrl = async (code: string) => {
   const time = Math.floor(new Date().getTime() / 1000);
   const { data, key } = m115Encode(
@@ -35,6 +37,7 @@ export const getDownLoadUrl = async (code: string) => {
     url: '',
     code: '',
   };
+  await wait(1000);
   const res = await request({
     method: 'POST',
     url: `http://proapi.115.com/app/chrome/downurl?t=${time}`,
