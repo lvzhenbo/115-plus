@@ -34,29 +34,24 @@
   >
     播放当前文件夹
   </NButton>
-  <NModal v-model:show="showDownload">
-    <NCard
-      style="width: 40%"
-      title="文件下载"
-      :bordered="false"
-      role="dialog"
-      closable
-      @close="handleClose"
-    >
-      <NList hoverable>
-        <NListItem v-for="(item, index) in downloads" :key="index">
-          <NButton
-            text
-            tag="a"
-            :href="item.url"
-            target="_blank"
-            :theme-overrides="buttonThemeOverrides"
-          >
-            {{ item.name }}
-          </NButton>
-        </NListItem>
-      </NList>
-    </NCard>
+  <NModal
+    v-model:show="showDownload"
+    style="width: 40%"
+    title="文件下载"
+    :bordered="false"
+    preset="card"
+  >
+    <NTree
+      :data="downloads"
+      block-line
+      expand-on-click
+      key-field="code"
+      label-field="name"
+      show-line
+      virtual-scroll
+      style="max-height: 40vh"
+      :render-suffix="suffixRender"
+    />
   </NModal>
 </template>
 
@@ -64,10 +59,13 @@
   import { getCookie, getDownLoadUrl, type FileItem } from '@/utils';
   import { settings, request } from '@/utils';
   import { buttonThemeOverrides } from '@/utils/theme';
+  import { NButton, type TreeOption } from 'naive-ui';
 
   interface DownloadItem {
     name: string;
-    url: string;
+    url?: string;
+    code: string;
+    children?: DownloadItem[];
   }
 
   interface VideoItem {
@@ -77,9 +75,16 @@
     time?: number;
   }
 
+  interface ForderVideo {
+    n: string;
+    pc: string;
+  }
+
   interface ForderFile {
     n: string;
     pc: string;
+    fid?: string;
+    cid?: string;
   }
 
   const message = useMessage();
@@ -128,18 +133,26 @@
 
   const handleDownload = async () => {
     try {
-      const files = getSelectFile();
-      if (!files) return;
-      const loading = message.loading('获取下载链接中...');
-      for (const file of files) {
+      const selectFiles = getSelectFile();
+      if (!selectFiles) return;
+      const loading = message.loading(
+        '获取下载链接中，如果文件较多等待时间会比较长，并且有几率卡住',
+        {
+          duration: 0,
+        },
+      );
+      for (const file of selectFiles) {
         if (file.isDir) {
-          loading.destroy();
-          message.error('暂不支持下载文件夹，请勿选择文件夹');
-          return;
+          const children = await getForderDownLoads(file.cateId!);
+          downloads.value.push({
+            name: file.name,
+            code: file.cateId!,
+            children,
+          });
+        } else {
+          const download = await getDownLoadUrl(file.code);
+          downloads.value.push(download);
         }
-
-        const download = await getDownLoadUrl(file);
-        downloads.value.push(download);
       }
       loading.destroy();
       if (downloads.value.length === 0) {
@@ -163,10 +176,6 @@
         GM_openInTab(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`);
       }
     });
-  };
-
-  const handleClose = () => {
-    showDownload.value = false;
   };
 
   const handlePlay = async () => {
@@ -204,7 +213,7 @@
   const handleFolderPlay = async () => {
     try {
       const url = new URL(window.parent.location.href);
-      const files: ForderFile[] = await getForderFiles(url.searchParams.get('cid') as string);
+      const files: ForderVideo[] = await getForderVideos(url.searchParams.get('cid') as string);
       if (files.length === 0) {
         message.error('文件夹内没有视频文件');
         return;
@@ -226,7 +235,7 @@
     }
   };
 
-  const getForderFiles = async (cid: string) => {
+  const getForderVideos = async (cid: string) => {
     const cookie = await getCookie();
     const res = await request({
       method: 'GET',
@@ -245,6 +254,61 @@
       } else {
         throw new Error('获取文件夹文件失败');
       }
+    }
+  };
+
+  const getForderDownLoads = async (id: string) => {
+    const temp: DownloadItem[] = [];
+    const files = await getForderFiles(id);
+    for (const file of files) {
+      if (file.fid) {
+        const download = await getDownLoadUrl(file.pc);
+        temp.push(download);
+      } else {
+        const children = await getForderDownLoads(file.cid!);
+        temp.push({
+          name: file.n,
+          code: file.pc,
+          children,
+        });
+      }
+    }
+    return temp;
+  };
+
+  const getForderFiles = async (id: string) => {
+    const res = await request({
+      method: 'GET',
+      url: `https://webapi.115.com/files?aid=1&cid=${id}&show_dir=1&limit=9999&format=json`,
+    });
+    const json = JSON.parse(res.responseText);
+    if (json.state) {
+      return json.data as ForderFile[];
+    } else {
+      if (json.error) {
+        throw new Error(json.error);
+      } else {
+        throw new Error('获取文件夹中的文件失败');
+      }
+    }
+  };
+
+  const suffixRender = (info: { option: TreeOption; checked: boolean; selected: boolean }) => {
+    if (info.option.url) {
+      return (
+        <NButton
+          text
+          theme-overrides={buttonThemeOverrides}
+          tag="a"
+          // @ts-ignore
+          href={info.option.url}
+          target="_blank"
+        >
+          下载
+        </NButton>
+      );
+    } else {
+      return undefined;
     }
   };
 </script>

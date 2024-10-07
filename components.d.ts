@@ -39,6 +39,7 @@ declare module 'vue' {
     NTabPane: typeof import('naive-ui')['NTabPane']
     NTabs: typeof import('naive-ui')['NTabs']
     NText: typeof import('naive-ui')['NText']
+    NTree: typeof import('naive-ui')['NTree']
     OfflineDownloadModal: typeof import('./src/components/OfflineDownloadModal.vue')['default']
     VideoModal: typeof import('./src/components/VideoModal.vue')['default']
   }

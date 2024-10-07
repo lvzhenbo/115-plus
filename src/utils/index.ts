@@ -22,17 +22,18 @@ const gKeyS = [0x29, 0x23, 0x21, 0x5e];
 const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
 const md5 = CryptoJS.MD5;
 
-export const getDownLoadUrl = async (file: FileItem) => {
+export const getDownLoadUrl = async (code: string) => {
   const time = Math.floor(new Date().getTime() / 1000);
   const { data, key } = m115Encode(
     JSON.stringify({
-      pickcode: file.code,
+      pickcode: code,
     }),
     time,
   );
   const download = {
     name: '',
     url: '',
+    code: '',
   };
   const res = await request({
     method: 'POST',
@@ -51,9 +52,11 @@ export const getDownLoadUrl = async (file: FileItem) => {
       url: {
         url: string;
       };
+      pick_code: string;
     };
     download.name = data.file_name;
     download.url = data.url.url;
+    download.code = data.pick_code;
     return download;
   }
 };

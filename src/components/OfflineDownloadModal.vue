@@ -37,8 +37,7 @@
     <iframe
       ref="iframe"
       src="https://captchaapi.115.com/?ac=security_code&type=web"
-      frameborder="0"
-      style="width: 100%; height: 500px"
+      style="width: 100%; height: 500px; border: none"
     ></iframe>
   </NModal>
   <NModal

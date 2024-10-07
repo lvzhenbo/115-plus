@@ -28,7 +28,6 @@
     "xgplayer-hls.js": "^3.0.20"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.10.4",
     "@tsconfig/node20": "^20.1.4",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.16.10",
