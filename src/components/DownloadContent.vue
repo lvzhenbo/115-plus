@@ -171,9 +171,13 @@
     if (!files) return;
     files.forEach((file) => {
       if (file.isDir) {
-        GM_openInTab(`https://115.com/?cid=${file.cateId}&offset=0&tab=&mode=wangpan`);
+        GM_openInTab(`https://115.com/?cid=${file.cateId}&offset=0&tab=&mode=wangpan`, {
+          setParent: true,
+        });
       } else if (file.fileMode === '9') {
-        GM_openInTab(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`);
+        GM_openInTab(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`, {
+          setParent: true,
+        });
       }
     });
   };
