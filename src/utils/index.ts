@@ -268,6 +268,7 @@ export interface Settings {
   };
   openNewTab: {
     enable: boolean;
+    setParent: boolean;
   };
   oldButton: {
     enable: boolean;

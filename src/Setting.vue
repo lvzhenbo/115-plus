@@ -92,6 +92,13 @@
                 </NFormItem>
               </NForm>
             </NTabPane>
+            <NTabPane name="cloudDownloadSetting" tab="其他设置">
+              <NForm ref="formRef" label-placement="left" label-width="auto" :show-feedback="false">
+                <NFormItem label="火狐默认在身份组内打开标签" path="openNewTab.setParent">
+                  <NSwitch v-model:value="settingsRef.openNewTab.setParent" />
+                </NFormItem>
+              </NForm>
+            </NTabPane>
           </NTabs>
           <template #action>
             <div style="display: flex; justify-content: end">
@@ -122,6 +129,7 @@
       },
       openNewTab: {
         enable: true,
+        setParent: false,
       },
       oldButton: {
         enable: true,

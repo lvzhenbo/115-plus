@@ -172,11 +172,11 @@
     files.forEach((file) => {
       if (file.isDir) {
         GM_openInTab(`https://115.com/?cid=${file.cateId}&offset=0&tab=&mode=wangpan`, {
-          setParent: true,
+          setParent: settings?.openNewTab.setParent,
         });
       } else if (file.fileMode === '9') {
         GM_openInTab(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`, {
-          setParent: true,
+          setParent: settings?.openNewTab.setParent,
         });
       }
     });

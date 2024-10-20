@@ -92,7 +92,9 @@
               <NButton
                 text
                 onClick={() =>
-                  GM_openInTab(`https://115.com/?cid=${row.file_id}&offset=0&tab=&mode=wangpan`)
+                  GM_openInTab(`https://115.com/?cid=${row.file_id}&offset=0&tab=&mode=wangpan`, {
+                    setParent: settings?.openNewTab.setParent,
+                  })
                 }
               >
                 {{

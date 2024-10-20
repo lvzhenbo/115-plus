@@ -42,6 +42,16 @@ if (settings) {
     };
     flag = true;
   }
+  if (typeof settings.openNewTab.setParent !== 'boolean') {
+    newSettings = {
+      ...newSettings,
+      openNewTab: {
+        enable: settings.openNewTab.enable,
+        setParent: false,
+      },
+    };
+    flag = true;
+  }
   GM_setValue('settings', newSettings);
   if (flag) {
     message.loading('115+ 功能更新中，即将刷新页面……');
