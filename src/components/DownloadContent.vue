@@ -93,17 +93,27 @@
   const keys = useMagicKeys();
   const ctrlAltD = keys['Ctrl+Alt+D'];
   const ctrlAltO = keys['Ctrl+Alt+O'];
+  const f9 = keys['F9'];
   const videoList = ref<VideoItem[]>([]);
   const bc = new BroadcastChannel('115Plus');
 
   watch(ctrlAltD, (v) => {
-    if (v) {
+    // @ts-ignore
+    if (v && GM_info.userAgentData.platform !== 'macOS') {
       handleDownload();
     }
   });
   watch(ctrlAltO, (v) => {
     if (v) {
       openFile();
+    }
+  });
+  watch(f9, (v) => {
+    // @ts-ignore
+    console.log(GM_info.userAgentData.platform);
+    // @ts-ignore
+    if (v && GM_info.userAgentData.platform === 'macOS') {
+      handleDownload();
     }
   });
 
