@@ -15,7 +15,7 @@
 
 ## 功能快捷键
 
-下载：`Ctrl+Alt+D`
+下载：`Ctrl+Alt+D` (mac`F9`)
 
 新标签打开：`Ctrl+Alt+O`
 
