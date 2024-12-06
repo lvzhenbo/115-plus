@@ -110,8 +110,6 @@
   });
   watch(f9, (v) => {
     // @ts-ignore
-    console.log(GM_info.userAgentData.platform);
-    // @ts-ignore
     if (v && GM_info.userAgentData.platform === 'macOS') {
       handleDownload();
     }

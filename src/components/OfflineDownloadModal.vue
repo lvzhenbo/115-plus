@@ -12,6 +12,7 @@
         type="textarea"
         placeholder="支持HTTP、HTTPS、FTP、磁力链和电驴链接，换行可添加多个"
         clearable
+        autofocus
         :rows="10"
       />
       <NFormItem label="保存到：" label-placement="left" style="margin-top: 10px">
