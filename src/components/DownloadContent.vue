@@ -256,7 +256,9 @@
       url: `https://v.anxia.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=9999&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
+        cookie.find((item) => item.name === 'KID')?.value
+      }`,
       anonymous: true,
     });
     const json = JSON.parse(res.responseText);

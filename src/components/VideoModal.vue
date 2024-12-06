@@ -131,7 +131,9 @@
       url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
+        cookie.find((item) => item.name === 'KID')?.value
+      }`,
       anonymous: true,
     });
     const json = JSON.parse(res.responseText);
@@ -153,7 +155,9 @@
       url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
+        cookie.find((item) => item.name === 'KID')?.value
+      }`,
       anonymous: true,
     });
     const json = JSON.parse(res.responseText);
@@ -178,7 +182,9 @@
       },
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value}`,
+      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
+        cookie.find((item) => item.name === 'KID')?.value
+      }`,
       anonymous: true,
       data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
     });
