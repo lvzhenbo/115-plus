@@ -98,7 +98,6 @@
   const bc = new BroadcastChannel('115Plus');
 
   watch(ctrlAltD, (v) => {
-    // @ts-ignore
     if (v && GM_info.userAgentData.platform !== 'macOS') {
       handleDownload();
     }
@@ -109,7 +108,6 @@
     }
   });
   watch(f9, (v) => {
-    // @ts-ignore
     if (v && GM_info.userAgentData.platform === 'macOS') {
       handleDownload();
     }
