@@ -322,6 +322,13 @@
     "watchThrottled": true,
     "watchTriggerable": true,
     "watchWithFilter": true,
-    "whenever": true
+    "whenever": true,
+    "GM_deleteValues": true,
+    "GM_getValues": true,
+    "GM_setValues": true,
+    "onElementRemoval": true,
+    "useCountdown": true,
+    "usePreferredReducedTransparency": true,
+    "useSSRWidth": true
   }
 }
