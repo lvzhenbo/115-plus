@@ -181,7 +181,7 @@
           setParent: settings?.openNewTab.setParent,
         });
       } else if (file.fileMode === '9') {
-        GM_openInTab(`https://v.anxia.com/?pickcode=${file.code}&share_id=0`, {
+        GM_openInTab(`https://115vod.com/?pickcode=${file.code}&share_id=0`, {
           setParent: settings?.openNewTab.setParent,
         });
       }
@@ -249,7 +249,7 @@
     const cookie = await getCookie();
     const res = await request({
       method: 'GET',
-      url: `https://v.anxia.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=9999&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
+      url: `https://115vod.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=9999&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
       };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${

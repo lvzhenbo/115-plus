@@ -128,7 +128,7 @@
     const cookie = await getCookie();
     const res = await request({
       method: 'GET',
-      url: `https://v.anxia.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
+      url: `https://115vod.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
       };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
@@ -152,7 +152,7 @@
     const cookie = await getCookie();
     const res = await request({
       method: 'GET',
-      url: `https://v.anxia.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
+      url: `https://115vod.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
       cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
         cookie.find((item) => item.name === 'SEID')?.value
       };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
@@ -176,7 +176,7 @@
     const cookie = await getCookie();
     request({
       method: 'POST',
-      url: 'https://v.anxia.com/webapi/files/history',
+      url: 'https://115vod.com/webapi/files/history',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
