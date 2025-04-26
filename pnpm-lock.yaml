@@ -34,10 +34,10 @@ importers:
         version: 3.5.13(typescript@5.8.3)
       xgplayer:
         specifier: ^3.0.21
-        version: 3.0.21(core-js@3.37.1)
+        version: 3.0.21(core-js@3.41.0)
       xgplayer-hls.js:
         specifier: ^3.0.21
-        version: 3.0.21(core-js@3.37.1)(xgplayer@3.0.21(core-js@3.37.1))
+        version: 3.0.21(core-js@3.41.0)(xgplayer@3.0.21(core-js@3.41.0))
     devDependencies:
       '@eslint/js':
         specifier: ^9.25.1
@@ -1160,8 +1160,8 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  core-js@3.37.1:
-    resolution: {integrity: sha512-Xn6qmxrQZyB0FFY8E3bgRXei3lWDJHhvI+u0q9TKIYM49G8pAr0FgnnrFRAmsbptZL1yxRADVXn+x5AGsbBfyw==}
+  core-js@3.41.0:
+    resolution: {integrity: sha512-SJ4/EHwS36QMJd6h/Rg+GyR4A5xE0FSI3eZ+iBVpfqf1x0eTSg1smWLHrA+2jQThZSh97fmSgFSU8B61nxosxA==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -3479,7 +3479,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  core-js@3.37.1: {}
+  core-js@3.41.0: {}
 
   cross-spawn@7.0.6:
     dependencies:
@@ -4757,27 +4757,27 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
-  xgplayer-hls.js@3.0.21(core-js@3.37.1)(xgplayer@3.0.21(core-js@3.37.1)):
+  xgplayer-hls.js@3.0.21(core-js@3.41.0)(xgplayer@3.0.21(core-js@3.41.0)):
     dependencies:
-      core-js: 3.37.1
+      core-js: 3.41.0
       deepmerge: 2.0.1
       event-emitter: 0.3.5
       hls.js: 1.6.2
-      xgplayer: 3.0.21(core-js@3.37.1)
+      xgplayer: 3.0.21(core-js@3.41.0)
 
-  xgplayer-subtitles@3.0.21(core-js@3.37.1):
+  xgplayer-subtitles@3.0.21(core-js@3.41.0):
     dependencies:
-      core-js: 3.37.1
+      core-js: 3.41.0
       eventemitter3: 4.0.7
 
-  xgplayer@3.0.21(core-js@3.37.1):
+  xgplayer@3.0.21(core-js@3.41.0):
     dependencies:
-      core-js: 3.37.1
+      core-js: 3.41.0
       danmu.js: 1.1.13
       delegate: 3.2.0
       downloadjs: 1.4.7
       eventemitter3: 4.0.7
-      xgplayer-subtitles: 3.0.21(core-js@3.37.1)
+      xgplayer-subtitles: 3.0.21(core-js@3.41.0)
 
   xml-name-validator@4.0.0: {}
 
