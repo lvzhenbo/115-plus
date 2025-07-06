@@ -17,38 +17,38 @@
   },
   "dependencies": {
     "@vicons/antd": "^0.13.0",
-    "@vueuse/core": "^13.1.0",
+    "@vueuse/core": "^13.5.0",
     "artplayer": "^5.2.3",
     "big-integer": "^1.6.52",
     "crypto-js": "^4.2.0",
     "filesize": "^10.1.6",
-    "naive-ui": "^2.41.0",
-    "vue": "^3.5.13",
-    "xgplayer": "^3.0.21",
-    "xgplayer-hls.js": "^3.0.21"
+    "naive-ui": "^2.42.0",
+    "vue": "^3.5.17",
+    "xgplayer": "^3.0.22",
+    "xgplayer-hls.js": "^3.0.22"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.1",
-    "@tsconfig/node22": "^22.0.1",
+    "@eslint/js": "^9.30.1",
+    "@tsconfig/node22": "^22.0.2",
     "@types/crypto-js": "^4.2.2",
-    "@types/node": "^22.15.3",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "@vitejs/plugin-vue-jsx": "^4.1.2",
+    "@types/node": "^24.0.10",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitejs/plugin-vue-jsx": "^5.0.1",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.5.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.7.0",
-    "eslint": "^9.25.1",
-    "eslint-plugin-vue": "^10.1.0",
-    "npm-run-all2": "^7.0.2",
-    "prettier": "^3.5.3",
-    "release-it": "^19.0.1",
+    "eslint": "^9.30.1",
+    "eslint-plugin-vue": "^10.3.0",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "^3.6.2",
+    "release-it": "^19.0.3",
     "typescript": "^5.8.3",
-    "unplugin-auto-import": "^19.1.2",
-    "unplugin-vue-components": "^28.5.0",
-    "vite": "^6.3.4",
-    "vite-plugin-monkey": "^5.0.8",
-    "vue-eslint-parser": "^10.1.3",
-    "vue-tsc": "^2.2.10"
+    "unplugin-auto-import": "^19.3.0",
+    "unplugin-vue-components": "^28.8.0",
+    "vite": "^7.0.2",
+    "vite-plugin-monkey": "^5.0.9",
+    "vue-eslint-parser": "^10.2.0",
+    "vue-tsc": "^3.0.1"
   },
   "release-it": {
     "git": {
@@ -64,5 +64,5 @@
       "after:git:release": "pnpm run build"
     }
   },
-  "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
+  "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417"
 }
