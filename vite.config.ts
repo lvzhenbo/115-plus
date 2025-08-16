@@ -21,9 +21,6 @@ export default defineConfig({
         },
         '@vueuse/core',
       ],
-      eslintrc: {
-        enabled: true,
-      },
     }),
     Components({
       resolvers: [NaiveUiResolver()],

@@ -1,4 +1,3 @@
-import js from '@eslint/js';
 import pluginVue from 'eslint-plugin-vue';
 import {
   defineConfigWithVueTs,
@@ -7,7 +6,6 @@ import {
 } from '@vue/eslint-config-typescript';
 import prettierConfig from '@vue/eslint-config-prettier';
 import parserVue from 'vue-eslint-parser';
-import AutoImport from './.eslintrc-auto-import.json' with { type: 'json' };
 
 configureVueProject({
   tsSyntaxInTemplates: true,
@@ -16,7 +14,6 @@ configureVueProject({
 
 export default defineConfigWithVueTs(
   pluginVue.configs['flat/recommended'],
-  js.configs.recommended,
   vueTsConfigs.recommended,
   {
     name: 'app/vue-files',
@@ -31,11 +28,6 @@ export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
     files: ['**/*.{ts,mts,tsx,vue}'],
-    languageOptions: {
-      globals: {
-        ...AutoImport.globals,
-      },
-    },
     rules: {
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
