@@ -141,28 +141,27 @@
     try {
       const selectFiles = getSelectFile();
       if (!selectFiles) return;
-      const loading = message.loading(
-        '获取下载链接中，如果文件较多等待时间会比较长，并且有几率卡住',
-        {
-          duration: 0,
-        },
-      );
+      const loading = message.loading('获取文件信息中...', {
+        duration: 0,
+      });
       for (const file of selectFiles) {
         if (file.isDir) {
-          const children = await getForderDownLoads(file.cateId!);
+          const children = await getForderFileStructure(file.cateId!);
           downloads.value.push({
             name: file.name,
             code: file.cateId!,
             children,
           });
         } else {
-          const download = await getDownLoadUrl(file.code);
-          downloads.value.push(download);
+          downloads.value.push({
+            name: file.name,
+            code: file.code,
+          });
         }
       }
       loading.destroy();
       if (downloads.value.length === 0) {
-        message.error('获取下载链接失败');
+        message.error('获取文件信息失败');
       } else {
         showDownload.value = true;
       }
@@ -266,15 +265,17 @@
     }
   };
 
-  const getForderDownLoads = async (id: string) => {
+  const getForderFileStructure = async (id: string) => {
     const temp: DownloadItem[] = [];
     const files = await getForderFiles(id);
     for (const file of files) {
       if (file.fid) {
-        const download = await getDownLoadUrl(file.pc);
-        temp.push(download);
+        temp.push({
+          name: file.n,
+          code: file.pc,
+        });
       } else {
-        const children = await getForderDownLoads(file.cid!);
+        const children = await getForderFileStructure(file.cid!);
         temp.push({
           name: file.n,
           code: file.pc,
@@ -302,6 +303,27 @@
     }
   };
 
+  const handleDownloadFile = async (option: TreeOption) => {
+    try {
+      const loading = message.loading('获取下载链接中...', {
+        duration: 0,
+      });
+      const download = await getDownLoadUrl(option.code as string);
+      loading.destroy();
+      if (download.url) {
+        // 直接打开下载链接
+        GM_openInTab(download.url, {
+          setParent: settings?.openNewTab.setParent,
+        });
+      } else {
+        message.error('获取下载链接失败');
+      }
+    } catch (error) {
+      console.error(error);
+      message.error(`获取下载链接失败，错误信息：${error}`);
+    }
+  };
+
   const suffixRender = (info: { option: TreeOption; checked: boolean; selected: boolean }) => {
     if (info.option.url) {
       return (
@@ -312,6 +334,17 @@
           // @ts-ignore
           href={info.option.url}
           target="_blank"
+        >
+          下载
+        </NButton>
+      );
+    } else if (!info.option.children) {
+      // 只有文件才显示下载按钮，文件夹不显示
+      return (
+        <NButton
+          text
+          theme-overrides={buttonThemeOverrides}
+          onClick={() => handleDownloadFile(info.option)}
         >
           下载
         </NButton>
