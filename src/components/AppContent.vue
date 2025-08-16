@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-  import { getCookie, request } from '@/utils';
+  import { request } from '@/utils';
 
   interface VideoItem {
     name: string;
@@ -45,8 +45,7 @@
         showDownload.value = true;
       }
     };
-    const cookies = await getCookie();
-    if (cookies.find((item) => item.name === 'UID')) {
+    if (window.location.search) {
       getSign();
       getDownPath();
     }

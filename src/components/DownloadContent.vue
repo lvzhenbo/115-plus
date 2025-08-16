@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="tsx">
-  import { getCookie, getDownLoadUrl, type FileItem } from '@/utils';
+  import { getDownLoadUrl, type FileItem } from '@/utils';
   import { settings, request } from '@/utils';
   import { buttonThemeOverrides } from '@/utils/theme';
   import { NButton, type TreeOption } from 'naive-ui';
@@ -246,26 +246,23 @@
   };
 
   const getForderVideos = async (cid: string) => {
-    const cookie = await getCookie();
     const res = await request({
       method: 'GET',
-      url: `https://115vod.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=9999&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
-      cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-        cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
-        cookie.find((item) => item.name === 'KID')?.value
-      }`,
-      anonymous: true,
+      url: `https://115vod.com/webapi/files?aid=1&cid=${cid}&offset=0&limit=1150&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
     });
-    const json = JSON.parse(res.responseText);
-    if (json.state) {
-      return json.data;
-    } else {
-      if (json.error) {
-        throw new Error(json.error);
+    if (res.status === 200) {
+      const json = JSON.parse(res.responseText);
+      if (json.state) {
+        return json.data;
       } else {
-        throw new Error('获取文件夹文件失败');
+        if (json.error) {
+          throw new Error(json.error);
+        } else {
+          throw new Error('获取文件夹文件失败');
+        }
       }
+    } else {
+      throw new Error('请先打开一次官方视频播放器页面');
     }
   };
 

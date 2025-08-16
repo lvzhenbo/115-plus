@@ -29,7 +29,7 @@
   import HlsJsPlugin from 'xgplayer-hls.js';
   import { Events } from 'xgplayer';
   import type { MenuOption } from 'naive-ui';
-  import { getCookie, request, settings } from '@/utils';
+  import { request, settings } from '@/utils';
   import { menuThemeOverrides } from '@/utils/theme';
 
   interface VideoItem {
@@ -125,40 +125,30 @@
   };
 
   const getVideoUrl = async (code: string) => {
-    const cookie = await getCookie();
     const res = await request({
       method: 'GET',
       url: `https://115vod.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
-      cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-        cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
-        cookie.find((item) => item.name === 'KID')?.value
-      }`,
-      anonymous: true,
     });
-    const json = JSON.parse(res.responseText);
-    if (json.state) {
-      if (json.video_url) {
-        return json.video_url.replace('http://', 'https://');
+    if (res.status === 200) {
+      const json = JSON.parse(res.responseText);
+      if (json.state) {
+        if (json.video_url) {
+          return json.video_url.replace('http://', 'https://');
+        } else {
+          throw new Error('视频地址获取失败');
+        }
       } else {
-        throw new Error('视频地址获取失败');
+        throw new Error(json.error);
       }
     } else {
-      throw new Error(json.error);
+      throw new Error('请先打开一次官方视频播放器页面');
     }
   };
 
   const getVideoHistory = async (code: string) => {
-    const cookie = await getCookie();
     const res = await request({
       method: 'GET',
       url: `https://115vod.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
-      cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-        cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
-        cookie.find((item) => item.name === 'KID')?.value
-      }`,
-      anonymous: true,
     });
     const json = JSON.parse(res.responseText);
     if (json.state) {
@@ -173,19 +163,12 @@
   };
 
   const setVideoHistory = async (code: string, time: number) => {
-    const cookie = await getCookie();
     request({
       method: 'POST',
       url: 'https://115vod.com/webapi/files/history',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      cookie: `CID=${cookie.find((item) => item.name === 'CID')?.value};SEID=${
-        cookie.find((item) => item.name === 'SEID')?.value
-      };UID=${cookie.find((item) => item.name === 'UID')?.value};KID=${
-        cookie.find((item) => item.name === 'KID')?.value
-      }`,
-      anonymous: true,
       data: `op=update&pick_code=${code}&time=${time}&definition=0&category=1&share_id=0`,
     });
   };
