@@ -113,7 +113,12 @@ const m115Getkey = (length: number, key: number[] | null) => {
   if (key != null) {
     const results = [];
     for (let i = 0; i < length; i++) {
-      results.push(((key[i] + gKts[length * i]) & 0xff) ^ gKts[length * (length - 1 - i)]);
+      const keyValue = key[i];
+      const gKtsValue1 = gKts[length * i];
+      const gKtsValue2 = gKts[length * (length - 1 - i)];
+      if (keyValue !== undefined && gKtsValue1 !== undefined && gKtsValue2 !== undefined) {
+        results.push(((keyValue + gKtsValue1) & 0xff) ^ gKtsValue2);
+      }
     }
     return results;
   }
@@ -128,7 +133,11 @@ const xor115Enc = (src: number[], srclen: number, key: number[], keylen: number)
   const ret = [];
   if (mod4 !== 0) {
     for (let i = 0, j = 0; 0 <= mod4 ? j < mod4 : j > mod4; i = 0 <= mod4 ? ++j : --j) {
-      ret.push(src[i] ^ key[i % keylen]);
+      const srcValue = src[i];
+      const keyValue = key[i % keylen];
+      if (srcValue !== undefined && keyValue !== undefined) {
+        ret.push(srcValue ^ keyValue);
+      }
     }
   }
   for (
@@ -136,7 +145,11 @@ const xor115Enc = (src: number[], srclen: number, key: number[], keylen: number)
     mod4 <= srclen ? k < srclen : k > srclen;
     i = mod4 <= srclen ? ++k : --k
   ) {
-    ret.push(src[i] ^ key[(i - mod4) % keylen]);
+    const srcValue = src[i];
+    const keyValue = key[(i - mod4) % keylen];
+    if (srcValue !== undefined && keyValue !== undefined) {
+      ret.push(srcValue ^ keyValue);
+    }
   }
   return ret;
 };
@@ -164,7 +177,10 @@ const m115AsymDecode = function (src: number[], srclen: number) {
 const bytesToString = (b: number[]) => {
   let ret = '';
   for (let j = 0; j < b.length; j++) {
-    ret += String.fromCharCode(b[j]);
+    const byteValue = b[j];
+    if (byteValue !== undefined) {
+      ret += String.fromCharCode(byteValue);
+    }
   }
   return ret;
 };
@@ -211,11 +227,14 @@ const RSA = () => {
   const a2hex = (byteArray: number[]) => {
     let hexString = '';
     for (let i = 0; i < byteArray.length; i++) {
-      let nextHexByte = byteArray[i].toString(16);
-      if (nextHexByte.length < 2) {
-        nextHexByte = '0' + nextHexByte;
+      const byteValue = byteArray[i];
+      if (byteValue !== undefined) {
+        let nextHexByte = byteValue.toString(16);
+        if (nextHexByte.length < 2) {
+          nextHexByte = '0' + nextHexByte;
+        }
+        hexString += nextHexByte;
       }
-      hexString += nextHexByte;
     }
     return hexString;
   };

@@ -97,17 +97,17 @@
   const videoList = ref<VideoItem[]>([]);
   const bc = new BroadcastChannel('115Plus');
 
-  watch(ctrlAltD, (v) => {
+  watch(ctrlAltD!, (v) => {
     if (v && GM_info.userAgentData.platform !== 'macOS') {
       handleDownload();
     }
   });
-  watch(ctrlAltO, (v) => {
+  watch(ctrlAltO!, (v) => {
     if (v) {
       openFile();
     }
   });
-  watch(f9, (v) => {
+  watch(f9!, (v) => {
     if (v && GM_info.userAgentData.platform === 'macOS') {
       handleDownload();
     }
@@ -138,12 +138,14 @@
   };
 
   const handleDownload = async () => {
+    const selectFiles = getSelectFile();
+    if (!selectFiles) return;
+
+    const loading = message.loading('获取文件信息中...', {
+      duration: 0,
+    });
+
     try {
-      const selectFiles = getSelectFile();
-      if (!selectFiles) return;
-      const loading = message.loading('获取文件信息中...', {
-        duration: 0,
-      });
       for (const file of selectFiles) {
         if (file.isDir) {
           const children = await getForderFileStructure(file.cateId!);
@@ -159,7 +161,7 @@
           });
         }
       }
-      loading.destroy();
+
       if (downloads.value.length === 0) {
         message.error('获取文件信息失败');
       } else {
@@ -168,6 +170,8 @@
     } catch (error) {
       console.error(error);
       message.error(`获取信息失败，错误信息：${error}`);
+    } finally {
+      loading.destroy();
     }
   };
 
@@ -247,7 +251,7 @@
   const getForderVideos = async (cid: string) => {
     const res = await request({
       method: 'GET',
-      url: `https://115vod.com/webapi/files?aid=1&cid=${cid}&offset=0&limit=1150&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
+      url: `https://115vod.com/aps/natsort/files.php?aid=1&cid=${cid}&offset=0&limit=1150&show_dir=0&nf=&qid=0&type=4&source=&format=json&star=&is_q=&is_share=&r_all=1&o=file_name&asc=1&cur=1&natsort=1`,
     });
     if (res.status === 200) {
       const json = JSON.parse(res.responseText);

@@ -173,7 +173,10 @@
           sp.append(`url[${index}]`, item);
         });
       } else {
-        sp.append('url', urls[0]);
+        const firstUrl = urls[0];
+        if (firstUrl) {
+          sp.append('url', firstUrl);
+        }
       }
       sp.append('uid', props.downPath.user_id);
       sp.append('sign', props.signData.sign);
