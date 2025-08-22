@@ -238,7 +238,7 @@
   const getVideoUrl = async (code: string): Promise<string> => {
     const res = await request({
       method: 'GET',
-      url: `https://115vod.com/webapi/files/video?pickcode=${code}&share_id=0&local=1`,
+      url: `https://webapi.115.com/files/video?pickcode=${code}&share_id=0&local=1`,
     });
 
     if (res.status !== 200) {
@@ -263,7 +263,7 @@
   const getVideoHistory = async (code: string): Promise<number> => {
     const res = await request({
       method: 'GET',
-      url: `https://115vod.com/webapi/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
+      url: `https://webapi.115.com/files/history?pick_code=${code}&fetch=one&category=1&share_id=0`,
     });
 
     const json: HistoryApiResponse = JSON.parse(res.responseText);
@@ -283,7 +283,7 @@
   const setVideoHistory = async (code: string, time: number): Promise<void> => {
     request({
       method: 'POST',
-      url: 'https://115vod.com/webapi/files/history',
+      url: 'https://webapi.115.com/files/history',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
