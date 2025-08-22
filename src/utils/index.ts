@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import { MD5 } from 'crypto-es';
 import bigInt from 'big-integer';
 
 export interface FileItem {
@@ -20,7 +20,6 @@ const gKts = [
 ];
 const gKeyS = [0x29, 0x23, 0x21, 0x5e];
 const gKeyL = [120, 6, 173, 76, 51, 134, 93, 24, 76, 1, 63, 70];
-const md5 = CryptoJS.MD5;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -65,7 +64,7 @@ export const getDownLoadUrl = async (code: string) => {
 };
 
 const m115Encode = (code: string, time: number) => {
-  const key = stringToBytes(md5(`!@###@#${time}DFDR@#@#`).toString());
+  const key = stringToBytes(MD5(`!@###@#${time}DFDR@#@#`).toString());
   const bytes = stringToBytes(code);
   const tmp1 = m115SymEncode(bytes, bytes.length, key);
   const tmp2 = key.slice(0, 16).concat(tmp1);

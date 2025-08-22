@@ -45,7 +45,6 @@ export default defineConfig({
           xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
           'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
           'big-integer': cdn.jsdelivr('bigInt', 'BigInteger.min.js'),
-          'crypto-js': cdn.jsdelivr('CryptoJS', 'crypto-js.min.js'),
         },
       },
     }),
