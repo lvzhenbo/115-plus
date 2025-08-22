@@ -15,7 +15,7 @@ https://github.com/lvzhenbo/115-plus-desktop
 - 非侵入式获取文件下载直链（非常感谢 [kkHAIKE](https://github.com/kkHAIKE) 提供的 [脚本](https://github.com/kkHAIKE/fake115)，此功能基于这个脚本提供的方法编写）
 - 初步支持文件夹下载，为后续批量推到Aria2功能做铺垫
 - 批量新标签打开，仅支持文件夹和视频
-- 页内播放视频，可选择播放，或当前文件夹播放 **（官方修改了Cookie，油猴正式版无法获得，于是需要手动打开一次官方播放器此功能才有用）**
+- 页内播放视频，可选择播放，或当前文件夹播放
 - 去水印
 - 跟随系统暗黑模式，建议配合Dark Reader插件
 
