@@ -44,7 +44,6 @@ export default defineConfig({
           'naive-ui': cdn.jsdelivr('naive', 'dist/index.prod.js'),
           xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
           'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
-          'big-integer': cdn.jsdelivr('bigInt', 'BigInteger.min.js'),
         },
       },
     }),
