@@ -70,7 +70,7 @@
   const menuOptions = ref<MenuOption[]>([]);
   const menuValue = ref<string>('');
   const videoList = ref<VideoItem[]>([]);
-  const videoRef = ref<HTMLElement | null>(null);
+  const videoRef = useTemplateRef('videoRef');
   const player = ref<Player | null>(null);
   const layoutHeight = ref<number>(700);
   const currentVideo = ref<VideoItem | null>(null);
@@ -242,7 +242,7 @@
     });
 
     if (res.status !== 200) {
-      throw new Error('请先打开一次官方视频播放器页面');
+      throw new Error('获取视频地址失败');
     }
 
     const json: VideoApiResponse = JSON.parse(res.responseText);
