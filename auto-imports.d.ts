@@ -11,6 +11,7 @@ declare global {
   const GM_addElement: typeof import('vite-plugin-monkey/dist/client')['GM_addElement']
   const GM_addStyle: typeof import('vite-plugin-monkey/dist/client')['GM_addStyle']
   const GM_addValueChangeListener: typeof import('vite-plugin-monkey/dist/client')['GM_addValueChangeListener']
+  const GM_audio: typeof import('vite-plugin-monkey/dist/client')['GM_audio']
   const GM_cookie: typeof import('vite-plugin-monkey/dist/client')['GM_cookie']
   const GM_deleteValue: typeof import('vite-plugin-monkey/dist/client')['GM_deleteValue']
   const GM_deleteValues: typeof import('vite-plugin-monkey/dist/client')['GM_deleteValues']
