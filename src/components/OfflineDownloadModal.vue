@@ -8,7 +8,6 @@
   >
     <div>
       <NInput
-        ref="inputInstRef"
         v-model:value="url"
         type="textarea"
         placeholder="支持HTTP、HTTPS、FTP、磁力链和电驴链接，换行可添加多个"
@@ -86,7 +85,6 @@
 
 <script setup lang="ts">
   import { request } from '@/utils';
-  import type { InputInst } from 'naive-ui';
 
   const show = defineModel('show', {
     type: Boolean,
@@ -104,7 +102,6 @@
     };
   }>();
 
-  const inputInstRef = ref<InputInst | null>(null);
   const message = useMessage();
   const url = ref('');
   const pathId = ref('');
@@ -131,9 +128,6 @@
   watch(show, (value) => {
     if (value) {
       getCount();
-      nextTick(() => {
-        inputInstRef.value?.focus();
-      });
     }
   });
 
