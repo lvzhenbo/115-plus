@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="tsx">
-  import { getDownLoadUrl, type FileItem } from '@/utils';
+  import { getDownLoadUrl, getErrorMessage, type FileItem } from '@/utils';
   import { settings, request } from '@/utils';
   import { buttonThemeOverrides } from '@/utils/theme';
   import { NButton, type TreeOption } from 'naive-ui';
@@ -171,7 +171,7 @@
       }
     } catch (error) {
       console.error(error);
-      message.error(`获取信息失败，错误信息：${error}`);
+      message.error(`获取信息失败，错误信息：${getErrorMessage(error)}`);
     }
   };
 
@@ -219,7 +219,7 @@
       });
     } catch (error) {
       console.error(error);
-      message.error(`视频播放失败，错误信息：${error}`);
+      message.error(`视频播放失败，错误信息：${getErrorMessage(error)}`);
     }
   };
 
@@ -244,7 +244,7 @@
       });
     } catch (error) {
       console.error(error);
-      message.error(`视频播放失败，错误信息：${error}`);
+      message.error(`视频播放失败，错误信息：${getErrorMessage(error)}`);
     }
   };
 
@@ -324,7 +324,7 @@
       }
     } catch (error) {
       console.error(error);
-      message.error(`获取下载链接失败，错误信息：${error}`);
+      message.error(`获取下载链接失败，错误信息：${getErrorMessage(error)}`);
     }
   };
 

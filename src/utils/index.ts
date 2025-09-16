@@ -361,3 +361,64 @@ export const request = (req: Req): Promise<ResponseType> => {
     });
   });
 };
+
+/**
+ * 获取错误的可读字符串表示
+ * @param error 错误对象
+ * @returns 错误的字符串描述
+ */
+export const getErrorMessage = (error: unknown): string => {
+  if (error === null || error === undefined) {
+    return '未知错误';
+  }
+
+  // 如果是字符串，直接返回
+  if (typeof error === 'string') {
+    return error;
+  }
+
+  // 如果是 Error 对象，返回 message
+  if (error instanceof Error) {
+    return error.message || '未知错误';
+  }
+
+  // 如果是对象，尝试获取常见的错误字段
+  if (typeof error === 'object') {
+    const errorObj = error as Record<string, unknown>;
+
+    // 尝试常见的错误字段
+    if (typeof errorObj.message === 'string' && errorObj.message) {
+      return errorObj.message;
+    }
+
+    if (typeof errorObj.error === 'string' && errorObj.error) {
+      return errorObj.error;
+    }
+
+    if (typeof errorObj.msg === 'string' && errorObj.msg) {
+      return errorObj.msg;
+    }
+
+    if (typeof errorObj.description === 'string' && errorObj.description) {
+      return errorObj.description;
+    }
+
+    // 如果有 toString 方法且不是默认的 [object Object]
+    if (typeof errorObj.toString === 'function') {
+      const str = errorObj.toString();
+      if (str !== '[object Object]') {
+        return str;
+      }
+    }
+
+    // 尝试 JSON.stringify，但要处理循环引用
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return '错误对象无法序列化';
+    }
+  }
+
+  // 其他类型转换为字符串
+  return String(error);
+};
