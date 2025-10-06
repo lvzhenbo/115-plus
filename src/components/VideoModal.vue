@@ -24,10 +24,9 @@
 </template>
 
 <script setup lang="ts">
-  import Player from 'xgplayer';
-  import 'xgplayer/dist/index.min.css';
-  import HlsJsPlugin from 'xgplayer-hls.js';
-  import { Events } from 'xgplayer';
+  import Artplayer from 'artplayer';
+  import type { Option } from 'artplayer';
+  import Hls from 'hls.js';
   import type { MenuOption } from 'naive-ui';
   import { request, settings } from '@/utils';
   import { menuThemeOverrides } from '@/utils/theme';
@@ -71,14 +70,14 @@
   const menuValue = ref<string>('');
   const videoList = ref<VideoItem[]>([]);
   const videoRef = useTemplateRef('videoRef');
-  const player = ref<Player | null>(null);
+  const player = ref<Artplayer | null>(null);
   const layoutHeight = ref<number>(700);
   const currentVideo = ref<VideoItem | null>(null);
 
   // 使用 VueUse 的 useIntervalFn 来管理定时保存播放进度
   const { pause: pauseSaveTimer, resume: resumeSaveTimer } = useIntervalFn(
     () => {
-      if (!player.value || !currentVideo.value || player.value.paused) return;
+      if (!player.value || !currentVideo.value || player.value.video.paused) return;
       if (!videoSettings.value.enableHistory) return;
 
       const currentTime = Math.floor(player.value.currentTime);
@@ -171,33 +170,38 @@
       throw new Error('播放器容器或视频URL不可用');
     }
 
-    const baseConfig = {
-      el: videoRef.value,
+    const baseConfig: Option = {
+      container: videoRef.value,
       url: video.url,
       autoplay: videoSettings.value.autoplay,
-      fluid: true,
       volume: videoSettings.value.volume,
-      defaultPlaybackRate: videoSettings.value.defaultPlaybackRate,
-      playbackRate: { list: [5, 4, 3, 2, 1.5, 1.25, 1, 0.75, 0.5] },
-      rotate: true,
+      playbackRate: true,
+      setting: true,
       pip: true,
-      dynamicBg: { disable: false },
+      fullscreen: true,
+      fullscreenWeb: true,
+      aspectRatio: true,
+      flip: true,
     };
 
     // 根据浏览器支持情况选择播放器配置
     const canPlayHLS = document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
 
-    if (canPlayHLS) {
-      player.value = new Player(baseConfig);
-    } else if (HlsJsPlugin.isSupported()) {
-      player.value = new Player({
-        ...baseConfig,
-        isLive: false,
-        plugins: [HlsJsPlugin],
-      });
-    } else {
-      throw new Error('浏览器不支持HLS播放');
+    if (!canPlayHLS && Hls.isSupported()) {
+      // 使用 hls.js 进行 HLS 播放
+      baseConfig.customType = {
+        m3u8: (video: HTMLVideoElement, url: string) => {
+          const hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(video);
+        },
+      };
     }
+
+    player.value = new Artplayer(baseConfig);
+
+    // 设置播放速度选项
+    player.value.playbackRate = videoSettings.value.defaultPlaybackRate;
 
     setupPlayerEvents(video);
   };
@@ -215,7 +219,12 @@
     }
 
     // 监听视频尺寸变化
-    player.value.on(Events.VIDEO_RESIZE, () => {
+    player.value.on('resize', () => {
+      layoutHeight.value = videoRef.value?.clientHeight || 700;
+    });
+
+    // 监听播放器准备就绪
+    player.value.on('ready', () => {
       layoutHeight.value = videoRef.value?.clientHeight || 700;
     });
   };
@@ -344,7 +353,7 @@
 
     stopSaveTimer();
 
-    player.value.src = video.url;
+    player.value.switchUrl(video.url);
 
     if (videoSettings.value.autoplay) {
       player.value.play();

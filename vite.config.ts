@@ -42,8 +42,8 @@ export default defineConfig({
             .jsdelivr('Vue', 'dist/vue.global.prod.js')
             .concat(util.dataUrl(';window.Vue=Vue;')),
           'naive-ui': cdn.jsdelivr('naive', 'dist/index.prod.js'),
-          xgplayer: cdn.jsdelivr('Player', 'dist/index.min.js'),
-          'xgplayer-hls.js': cdn.jsdelivr('HlsJsPlugin', 'dist/index.min.js'),
+          artplayer: cdn.jsdelivr('Artplayer', 'dist/artplayer.js'),
+          'hls.js': cdn.jsdelivr('Hls', 'dist/hls.min.js'),
         },
       },
     }),
