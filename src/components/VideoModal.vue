@@ -254,7 +254,59 @@
       throw new Error('视频地址获取失败');
     }
 
-    return json.video_url.replace('http://', 'https://');
+    const masterUrl = json.video_url.replace('http://', 'https://');
+
+    // 解析主播放列表获取实际视频流地址
+    return await parseM3u8MasterPlaylist(masterUrl);
+  };
+
+  /**
+   * 解析 m3u8 主播放列表，获取实际视频流地址
+   */
+  const parseM3u8MasterPlaylist = async (masterUrl: string): Promise<string> => {
+    const res = await request({
+      method: 'GET',
+      url: masterUrl,
+    });
+
+    if (res.status !== 200) {
+      throw new Error('获取视频流地址失败');
+    }
+
+    const m3u8Content = res.responseText;
+    const lines = m3u8Content.split('\n');
+
+    // 查找最高质量的视频流
+    let bestUrl = '';
+    let bestBandwidth = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('#EXT-X-STREAM-INF:')) {
+        // 解析带宽信息
+        const bandwidthMatch = trimmedLine.match(/BANDWIDTH=(\d+)/);
+        const bandwidth = bandwidthMatch && bandwidthMatch[1] ? parseInt(bandwidthMatch[1], 10) : 0;
+
+        // 获取下一行的 URL
+        const nextLine = lines[i + 1]?.trim();
+        if (nextLine && !nextLine.startsWith('#')) {
+          if (bandwidth > bestBandwidth) {
+            bestBandwidth = bandwidth;
+            bestUrl = nextLine;
+          }
+        }
+      }
+    }
+
+    if (!bestUrl) {
+      // 如果没有找到 EXT-X-STREAM-INF，可能本身就是媒体播放列表，直接返回原地址
+      return masterUrl;
+    }
+
+    return bestUrl;
   };
 
   /**
